@@ -1,0 +1,1125 @@
+openapi: 3.1.0
+info:
+  title: Futuristic Portfolio API
+  version: 1.0.0
+  description: |
+    REST API powering the futuristic portfolio platform. Authenticate to access protected endpoints.
+servers:
+  - url: http://localhost:4000
+    description: Local development
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          nullable: true
+    PaginatedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            page:
+              type: integer
+              minimum: 1
+            limit:
+              type: integer
+              minimum: 1
+            data:
+              type: array
+              items:
+                type: object
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, editor, guest]
+    AuthResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/User'
+                tokens:
+                  type: object
+                  properties:
+                    accessToken:
+                      type: string
+                    refreshToken:
+                      type: string
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        technologies:
+          type: array
+          items:
+            type: string
+        featured:
+          type: boolean
+        order:
+          type: integer
+        metrics:
+          type: object
+          properties:
+            stars:
+              type: integer
+            downloads:
+              type: integer
+            views:
+              type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Certificate:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        issuer:
+          type: string
+        issueDate:
+          type: string
+          format: date
+        category:
+          type: string
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        skills:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        published:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+        readTime:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    Testimonial:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        company:
+          type: string
+        role:
+          type: string
+        message:
+          type: string
+        rating:
+          type: integer
+        isFeatured:
+          type: boolean
+        isApproved:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    ContactMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        source:
+          type: string
+        status:
+          type: string
+          enum: [new, in-progress, resolved]
+        createdAt:
+          type: string
+          format: date-time
+    NewsletterSubscriber:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isConfirmed:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/register:
+    post:
+      summary: Register account
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                headline:
+                  type: string
+                bio:
+                  type: string
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: Email already registered
+  /api/auth/login:
+    post:
+      summary: Sign in
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+  /api/auth/refresh:
+    post:
+      summary: Refresh tokens
+      tags: [Auth]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Refreshed tokens
+  /api/auth/me:
+    get:
+      summary: Current profile
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /api/auth/logout:
+    post:
+      summary: Logout
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Session revoked
+  /api/auth/forgot-password:
+    post:
+      summary: Request password reset
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset email dispatched
+  /api/auth/reset-password:
+    post:
+      summary: Reset password
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Password updated
+  /api/projects:
+    get:
+      summary: List projects
+      tags: [Projects]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+        - in: query
+          name: featured
+          schema:
+            type: string
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: technology
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated projects
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Project'
+    post:
+      summary: Create project
+      tags: [Projects]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, slug, description, category]
+              properties:
+                title:
+                  type: string
+                slug:
+                  type: string
+                description:
+                  type: string
+                category:
+                  type: string
+                technologies:
+                  type: array
+                  items:
+                    type: string
+                featured:
+                  type: boolean
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /api/projects/featured:
+    get:
+      summary: List featured projects
+      tags: [Projects]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Paginated featured projects
+  /api/projects/{id}:
+    get:
+      summary: Get project by ID
+      tags: [Projects]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+    put:
+      summary: Update project
+      tags: [Projects]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+    delete:
+      summary: Remove project
+      tags: [Projects]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+  /api/certificates:
+    get:
+      summary: List certificates
+      tags: [Certificates]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: level
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated certificates
+    post:
+      summary: Create certificate
+      tags: [Certificates]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, slug, issuer, issueDate]
+              properties:
+                title:
+                  type: string
+                slug:
+                  type: string
+                issuer:
+                  type: string
+                issueDate:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Created
+  /api/certificates/{id}:
+    get:
+      summary: Get certificate
+      tags: [Certificates]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Certificate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+    put:
+      summary: Update certificate
+      tags: [Certificates]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+    delete:
+      summary: Delete certificate
+      tags: [Certificates]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+  /api/blog:
+    get:
+      summary: List blog posts
+      tags: [Blog]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: tag
+          schema:
+            type: string
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: published
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated posts
+    post:
+      summary: Publish blog post
+      tags: [Blog]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, slug, content]
+      responses:
+        '201':
+          description: Created
+  /api/blog/{id}:
+    get:
+      summary: Get blog post
+      tags: [Blog]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+    put:
+      summary: Update blog post
+      tags: [Blog]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated
+    delete:
+      summary: Delete blog post
+      tags: [Blog]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+  /api/blog/{postId}/comments:
+    post:
+      summary: Add comment
+      tags: [Blog]
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [authorName, authorEmail, content]
+              properties:
+                authorName:
+                  type: string
+                authorEmail:
+                  type: string
+                  format: email
+                content:
+                  type: string
+      responses:
+        '201':
+          description: Comment added
+  /api/blog/{postId}/comments/{commentId}:
+    patch:
+      summary: Moderate comment
+      tags: [Blog]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: commentId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approved:
+                  type: boolean
+      responses:
+        '200':
+          description: Comment updated
+  /api/testimonials:
+    get:
+      summary: List testimonials
+      tags: [Testimonials]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: featured
+          schema:
+            type: string
+        - in: query
+          name: approved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated testimonials
+    post:
+      summary: Submit testimonial
+      tags: [Testimonials]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, message]
+      responses:
+        '201':
+          description: Submitted
+  /api/testimonials/{id}:
+    get:
+      summary: Get testimonial
+      tags: [Testimonials]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Testimonial
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Testimonial'
+    put:
+      summary: Update testimonial
+      tags: [Testimonials]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated
+    delete:
+      summary: Delete testimonial
+      tags: [Testimonials]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+  /api/testimonials/{id}/approval:
+    patch:
+      summary: Toggle testimonial approval
+      tags: [Testimonials]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approved:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated
+  /api/contact:
+    post:
+      summary: Submit contact message
+      tags: [Contact]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, message]
+      responses:
+        '201':
+          description: Message received
+    get:
+      summary: List contact messages
+      tags: [Contact]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Messages
+  /api/contact/{id}:
+    get:
+      summary: Get contact message
+      tags: [Contact]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    patch:
+      summary: Update message status
+      tags: [Contact]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    delete:
+      summary: Delete message
+      tags: [Contact]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+  /api/newsletter/subscribe:
+    post:
+      summary: Subscribe to newsletter
+      tags: [Newsletter]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+      responses:
+        '202':
+          description: Confirmation sent
+  /api/newsletter/unsubscribe:
+    post:
+      summary: Unsubscribe from newsletter
+      tags: [Newsletter]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+      responses:
+        '200':
+          description: Unsubscribed
+  /api/newsletter/confirm/{token}:
+    get:
+      summary: Confirm subscription
+      tags: [Newsletter]
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Confirmed
+  /api/newsletter:
+    get:
+      summary: List subscribers
+      tags: [Newsletter]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subscribers
+  /api/newsletter/{id}:
+    delete:
+      summary: Delete subscriber
+      tags: [Newsletter]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+  /api/newsletter/send:
+    post:
+      summary: Trigger digest send
+      tags: [Newsletter]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Dispatch initiated
+  /api/search:
+    get:
+      summary: Global search
+      tags: [Search]
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Search results
+  /api/upload/single:
+    post:
+      summary: Upload single file
+      tags: [Uploads]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Uploaded
+  /api/upload/multiple:
+    post:
+      summary: Upload multiple files
+      tags: [Uploads]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Uploaded
+  /api/analytics:
+    post:
+      summary: Ingest analytics event
+      tags: [Analytics]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                payload:
+                  type: object
+      responses:
+        '202':
+          description: Accepted
+  /api/analytics/summary:
+    get:
+      summary: Analytics summary
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Aggregated counts
+  /api/analytics/timeline:
+    get:
+      summary: Analytics timeline
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Timeline
+  /api/admin/metrics:
+    get:
+      summary: Dashboard metrics
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Metrics
+  /api/admin/export/subscribers:
+    get:
+      summary: Export subscribers CSV
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: CSV response
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+  /api/admin/export/contacts:
+    get:
+      summary: Export contact messages CSV
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: CSV response
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
