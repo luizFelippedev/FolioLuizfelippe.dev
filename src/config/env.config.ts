@@ -10,6 +10,7 @@ const envSchema = z
     PORT: z.coerce.number().int().positive().default(4000),
     CLIENT_URL: z.string().url().default('http://localhost:5173'),
     ASSET_BASE_URL: z.string().url().default('http://localhost:4000'),
+    CORS_ORIGINS: z.string().optional(),
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
     REDIS_URL: z.string().url().optional(),
     JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET must be at least 32 characters'),
