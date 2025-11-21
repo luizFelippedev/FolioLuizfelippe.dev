@@ -6,6 +6,7 @@ import { createRedisClient, disconnectRedis } from '@config/redis.config';
 import connectDatabase, { disconnectDatabase } from '@database/connection';
 import { scheduleNewsletterJob } from '@jobs/newsletter.job';
 import { initializeSockets } from '@sockets/index';
+import { ensureAdmin } from './scripts/ensureAdmin';
 import logger from '@utils/logger/logger';
 
 const server = http.createServer(app);
@@ -14,6 +15,7 @@ initializeSockets(server);
 const startServer = async () => {
   try {
     await connectDatabase();
+    await ensureAdmin();
 
     if (env.REDIS_URL) {
       createRedisClient();
