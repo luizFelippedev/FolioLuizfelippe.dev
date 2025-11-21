@@ -126,9 +126,9 @@ const attachAuthCookies = (
 ) => {
   const cookieOptions = {
     httpOnly: true,
-    sameSite: 'lax' as const,
-    secure: isProduction,
-    domain: isProduction ? new URL(env.CLIENT_URL).hostname : undefined
+    sameSite: 'none' as const, // permitir envio cross-site (Vercel -> Render)
+    secure: true, // necessário para sameSite:none
+    domain: undefined
   };
 
   res.cookie('accessToken', tokens.accessToken, {
