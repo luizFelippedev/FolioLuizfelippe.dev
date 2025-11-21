@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import env, { isProduction } from '@config/env.config';
+import env from '@config/env.config';
 import {
   generatePasswordReset,
   getProfile,
