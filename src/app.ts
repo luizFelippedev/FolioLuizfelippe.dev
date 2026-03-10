@@ -78,6 +78,15 @@ app.get('/health', (_req, res) => {
   });
 });
 
+app.get('/ready', (_req, res) => {
+  res.json({
+    status: 'ok',
+    ready: true,
+    timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV
+  });
+});
+
 app.get('/metrics', async (_req, res) => {
   res.setHeader('Content-Type', metricsRegister.contentType);
   res.send(await getMetrics());

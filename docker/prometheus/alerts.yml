@@ -1,0 +1,11 @@
+groups:
+  - name: backend-alerts
+    rules:
+      - alert: BackendDown
+        expr: up{job="portfolio-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Portfolio backend is down"
+          description: "Prometheus cannot scrape portfolio-backend for more than 2 minutes."

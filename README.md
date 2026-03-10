@@ -96,36 +96,59 @@ Ensure the hosting platform exposes `PORT`, forwards WebSocket traffic (Socket.I
 - `yarn lint` / `yarn format` – Static analysis and formatting helpers.
 - `npm run seed` – Populate MongoDB with the curated sample dataset.
 - `npm test` – Execute the Vitest integration suite (Mongo Memory Server + Supertest).
+- `npm run stack:up` – Start core stack locally.
+- `npm run stack:up:full` – Start core stack + optional queues/streaming/sql profiles.
+- `npm run release:activate -- <image:tag>` – Activate backend upgrade manually.
+- `npm run release:rollback` – Rollback to previous backend image.
+- `npm run release:status` – Show current active backend image and release state.
 
 
 ## 🐳 Docker & Compose
 - `docker build -t portfolio-backend .` – build the production image.
-- `docker-compose up --build` – run the API, MongoDB, and Redis together.
+- `docker compose up --build -d` – run core stack (backend + nginx + mongo + redis + prometheus + grafana).
+- `docker compose --profile queues --profile streaming --profile sql up -d` – run all optional services.
 
-The compose stack binds the API to `http://localhost:4000`, provisions MongoDB with a persistent volume, and boots Redis for caching/rate limiting. Override environment variables via `docker-compose.override.yml` or CLI `-e` flags for production secrets.
+Core endpoints:
+- API (NGINX): `http://localhost`
+- Health: `http://localhost/health`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3001`
+- RabbitMQ UI (`queues` profile): `http://localhost:15672`
+
+Manual upgrade (local self-hosted):
+1. Build/push candidate image.
+2. `npm run release:activate -- luizfelippedev/portfolio:v2`
+3. If needed: `npm run release:rollback`
 
 ## 🔐 Environment Template
-Duplicate `.env.example` into `.env.development`, `.env.production`, and `.env.test` as needed. Each variable is validated at boot, preventing silent misconfiguration.
+Use templates:
+- `.env.development.example`
+- `.env.production.example`
+- `.env.docker.example`
+
+Then create your runtime files (`.env.development`, `.env.production`, `.env`) with real secrets. Variables are validated at startup.
 
 Crafted to showcase senior-level backend engineering with futuristic flair. Integrate it with the companion frontend for a full-stack, immersive portfolio experience.
 
 ## 🚀 Render (Free Tier) Deploy
-`render.yaml` already lives at the repo root (`Portfolio/backend`) and uses the Dockerfile for a hands-free deploy.
+`render.yaml` already lives at the backend repo root (`Backend`) and uses the Dockerfile for a hands-free deploy.
 
-1) **Criar serviço**: Render → New → Web Service → selecione o repo → Root Directory: `Portfolio/backend` → plano Free → Render detecta o `render.yaml`.  
-2) **Variáveis no dashboard** (não suba segredos no git):
+1) **Criar serviço**: Render → New → Web Service → selecione o repo backend → Root Directory: `Backend` (se estiver em monorepo) → plano Free → Render detecta o `render.yaml`.  
+2) **Deploy controlado**: `autoDeploy: false`, então só atualiza quando você executar manual deploy no painel da Render.  
+3) **Variáveis no dashboard** (não suba segredos no git):
    - `DATABASE_URL` (MongoDB Atlas, ex: `mongodb+srv://...`)
    - `REDIS_URL` (opcional mas recomendado, ex: Upstash/Redis Cloud)  
    - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` (recrie strings fortes)  
-   - `CLIENT_URL` = domínio do frontend (ex: `https://seu-portfolio.vercel.app`)  
+   - `CLIENT_URL` = `https://luizfelippedev.vercel.app`
+   - `CORS_ORIGINS` = `https://luizfelippedev.vercel.app`
    - `ASSET_BASE_URL` = URL pública do backend Render (ex: `https://<app>.onrender.com`)  
-   - `NEWSLETTER_CONFIRMATION_URL` = `https://seu-portfolio.vercel.app/newsletter/confirm`  
-   - `PASSWORD_RESET_URL` = `https://seu-portfolio.vercel.app/reset-password`  
+   - `NEWSLETTER_CONFIRMATION_URL` = `https://luizfelippedev.vercel.app/newsletter/confirm`  
+   - `PASSWORD_RESET_URL` = `https://luizfelippedev.vercel.app/auth/reset-password`  
    - Cloud/S3 se usar: `CLOUDINARY_*`, `AWS_*`  
    - `NOTIFICATION_EMAIL` (from/sender)  
-   - (`PORT=4000`, `NODE_ENV=production` e tempos de JWT já estão no render.yaml)
-3) **WebSockets/CORS**: no painel da Render, habilite WebSockets. No código, permita o domínio do frontend em CORS/Socket.IO origins.  
-4) **Deploy**: Render vai buildar via Docker e expor HTTPS. Copie a URL pública para usar no frontend:
+   - (`PORT=4000`, `NODE_ENV=production` já está no `render.yaml`)
+4) **WebSockets/CORS**: no painel da Render, habilite WebSockets.  
+5) **Deploy**: Render vai buildar via Docker e expor HTTPS. Copie a URL pública para usar no frontend:
    - `VITE_API_URL=https://<app>.onrender.com/api`
    - `VITE_WS_URL=wss://<app>.onrender.com`
 

@@ -1,11 +1,17 @@
 import { config } from 'dotenv';
 import { z } from 'zod';
 
-config({ path: `.env.${process.env.NODE_ENV ?? 'development'}` });
+const appEnv = process.env.APP_ENV ?? process.env.NODE_ENV ?? 'development';
+config({ path: `.env.${appEnv}` });
 config();
+
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = appEnv;
+}
 
 const envSchema = z
   .object({
+    APP_ENV: z.enum(['development', 'production', 'test']).optional(),
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     PORT: z.coerce.number().int().positive().default(4000),
     CLIENT_URL: z.string().url().default('http://localhost:5173'),

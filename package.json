@@ -5,13 +5,21 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
-    "seed": "tsx scripts/seed.ts",
+    "dev:docker": "docker compose up -d",
+    "build": "rm -f tsconfig.tsbuildinfo && tsc --project tsconfig.json --incremental false && tsc-alias -p tsconfig.json",
+    "seed": "TMPDIR=${TMPDIR:-/tmp} tsx scripts/seed.ts",
     "create-admin": "tsx src/scripts/createAdmin.ts",
     "start": "node dist/server.js",
     "test": "vitest",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
-    "format": "prettier --write \"src/**/*.{ts,tsx,json}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
+    "stack:up": "docker compose up -d",
+    "stack:up:full": "docker compose --profile queues --profile streaming --profile sql up -d",
+    "stack:down": "docker compose down",
+    "release:check": "npm run lint && npm run build && npm test -- --run",
+    "release:activate": "bash scripts/release/activate.sh",
+    "release:rollback": "bash scripts/release/rollback.sh",
+    "release:status": "bash scripts/release/status.sh"
   },
   "engines": {
     "node": ">=18.0.0"

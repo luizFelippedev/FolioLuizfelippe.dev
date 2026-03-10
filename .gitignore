@@ -1,5 +1,8 @@
 node_modules
 .env*
+!.env.docker.example
+!.env.development.example
+!.env.production.example
 dist
 coverage
 logs
@@ -8,3 +11,4 @@ uploads
 tmp
 .idea
 .vscode
+.release-state.env

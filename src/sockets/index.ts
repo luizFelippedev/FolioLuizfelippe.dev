@@ -12,10 +12,15 @@ let chatNamespace: Namespace | null = null;
 let notificationsNamespace: Namespace | null = null;
 let analyticsNamespace: Namespace | null = null;
 
+const socketOrigins =
+  env.CORS_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? [env.CLIENT_URL];
+
 export const initializeSockets = (server: HttpServer): Server => {
   io = new Server(server, {
     cors: {
-      origin: env.CLIENT_URL,
+      origin: socketOrigins,
       credentials: true
     }
   });

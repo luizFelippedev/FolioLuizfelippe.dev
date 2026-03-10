@@ -4,14 +4,19 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    autoDeploy: true
+    autoDeploy: false
+    healthCheckPath: /ready
     envVars:
+      - key: APP_ENV
+        value: production
       - key: PORT
         value: 4000
       - key: NODE_ENV
         value: production
       - key: CLIENT_URL
-        value: https://your-frontend-domain
+        value: https://luizfelippedev.vercel.app
+      - key: CORS_ORIGINS
+        value: https://luizfelippedev.vercel.app
       - key: ASSET_BASE_URL
         value: https://your-backend-domain
       # Preencha no dashboard da Render (mantém secretos)
@@ -44,6 +49,6 @@ services:
       - key: NOTIFICATION_EMAIL
         sync: false
       - key: NEWSLETTER_CONFIRMATION_URL
-        value: https://your-frontend-domain/newsletter/confirm
+        value: https://luizfelippedev.vercel.app/newsletter/confirm
       - key: PASSWORD_RESET_URL
-        value: https://your-frontend-domain/reset-password
+        value: https://luizfelippedev.vercel.app/auth/reset-password
