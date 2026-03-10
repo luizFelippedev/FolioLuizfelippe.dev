@@ -1,6 +1,6 @@
+import { httpRequestCounter, httpRequestDuration } from '@utils/metrics/metrics';
 import type { NextFunction, Request, Response } from 'express';
 
-import { httpRequestCounter, httpRequestDuration } from '@utils/metrics/metrics';
 
 const sanitizeRoute = (req: Request): string => {
   if (req.route?.path) {

@@ -1,8 +1,8 @@
+import { successResponse } from '@utils/helpers/response.helper';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { saveFile } from '@services/upload.service';
-import { successResponse } from '@utils/helpers/response.helper';
 
 export const uploadSingleFile = async (req: Request, res: Response, next: NextFunction) => {
   try {

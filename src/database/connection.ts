@@ -1,7 +1,7 @@
+import logger from '@utils/logger/logger';
 import mongoose from 'mongoose';
 
 import { databaseConfig } from '@config/database.config';
-import logger from '@utils/logger/logger';
 
 export const connectDatabase = async (): Promise<typeof mongoose> => {
   try {

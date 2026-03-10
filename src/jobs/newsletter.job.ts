@@ -1,8 +1,8 @@
+import logger from '@utils/logger/logger';
 import cron from 'node-cron';
 
 import NewsletterSubscriberModel from '@models/NewsletterSubscriber.model';
 import { sendNewsletterDigestEmail } from '@services/email.service';
-import logger from '@utils/logger/logger';
 
 interface NewsletterJobOptions {
   cronExpression?: string;

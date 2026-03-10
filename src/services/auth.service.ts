@@ -1,14 +1,15 @@
 import crypto from 'node:crypto';
 
-import UserModel, { type UserDocument } from '@models/User.model';
+import { AppError } from '@utils/helpers/error.helper';
+import type {
+  TokenPayload} from '@utils/helpers/token.helper';
 import {
-  TokenPayload,
   createAccessToken,
   createRefreshToken,
   verifyRefreshToken
 } from '@utils/helpers/token.helper';
-import { AppError } from '@utils/helpers/error.helper';
 
+import UserModel, { type UserDocument } from '@models/User.model';
 import type {
   ForgotPasswordInput,
   LoginInput,

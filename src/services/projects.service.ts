@@ -1,6 +1,6 @@
-import ProjectModel, { type IProject } from '@models/Project.model';
 import { AppError } from '@utils/helpers/error.helper';
 
+import ProjectModel, { type IProject } from '@models/Project.model';
 import type { CreateProjectInput, UpdateProjectInput } from '@validators/project.validator';
 
 interface ListOptions {
@@ -10,7 +10,7 @@ interface ListOptions {
   filters?: Record<string, unknown>;
 }
 
-const applyPagination = <T>(
+const applyPagination = (
   query: ReturnType<typeof ProjectModel.find> | ReturnType<typeof ProjectModel.findOne>,
   options?: ListOptions
 ) => {

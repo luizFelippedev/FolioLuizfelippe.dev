@@ -1,7 +1,7 @@
-import ProjectModel from '@models/Project.model';
 import BlogModel from '@models/BlogPost.model';
 import CertificateModel from '@models/Certificate.model';
 import LabModel from '@models/Lab.model';
+import ProjectModel from '@models/Project.model';
 
 interface StatusSummary {
   projects: number;

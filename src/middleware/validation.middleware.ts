@@ -1,7 +1,7 @@
+import { createValidationError } from '@utils/helpers/error.helper';
 import type { Request, Response, NextFunction } from 'express';
 import type { AnyZodObject, ZodError } from 'zod';
 
-import { createValidationError } from '@utils/helpers/error.helper';
 
 export const validate = (schema: AnyZodObject) =>
   (req: Request, _res: Response, next: NextFunction) => {

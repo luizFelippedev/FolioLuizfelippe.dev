@@ -1,4 +1,5 @@
 import type { Server as HttpServer } from 'http';
+
 import { Server, type Namespace } from 'socket.io';
 
 import env from '@config/env.config';

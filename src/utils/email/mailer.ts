@@ -1,8 +1,8 @@
+import logger from '@utils/logger/logger';
 import nodemailer from 'nodemailer';
 
 import emailConfig from '@config/email.config';
 import { isDevelopment } from '@config/env.config';
-import logger from '@utils/logger/logger';
 
 let transporter: nodemailer.Transporter | null = null;
 

@@ -1,6 +1,6 @@
-import CertificateModel, { type CertificateDocument } from '@models/Certificate.model';
 import { AppError } from '@utils/helpers/error.helper';
 
+import CertificateModel, { type CertificateDocument } from '@models/Certificate.model';
 import type { CreateCertificateInput, UpdateCertificateInput } from '@validators/certificate.validator';
 
 interface ListOptions {

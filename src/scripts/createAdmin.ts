@@ -1,8 +1,9 @@
+import logger from '@utils/logger/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
+
 import connectDatabase, { disconnectDatabase } from '@database/connection';
 import UserModel from '@models/User.model';
-import logger from '@utils/logger/logger';
 
 const parseArgs = () => {
   const argv = yargs(hideBin(process.argv))

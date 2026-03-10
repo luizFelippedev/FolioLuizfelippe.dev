@@ -1,13 +1,16 @@
 import http from 'http';
 
-import app from './app';
+import logger from '@utils/logger/logger';
+
 import env from '@config/env.config';
 import { createRedisClient, disconnectRedis } from '@config/redis.config';
 import connectDatabase, { disconnectDatabase } from '@database/connection';
 import { scheduleNewsletterJob } from '@jobs/newsletter.job';
 import { initializeSockets } from '@sockets/index';
+
+import app from './app';
 import { ensureAdmin } from './scripts/ensureAdmin';
-import logger from '@utils/logger/logger';
+
 
 const server = http.createServer(app);
 initializeSockets(server);

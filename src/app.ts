@@ -2,24 +2,24 @@ import 'express-async-errors';
 
 import path from 'node:path';
 
+import { getMetrics, metricsRegister } from '@utils/metrics/metrics';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import type { Request } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import type { HelmetOptions } from 'helmet';
-import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 
-import env, { isProduction } from '@config/env.config';
 import corsConfig from '@config/cors.config';
-import requestIdMiddleware from '@middleware/requestId.middleware';
-import metricsMiddleware from '@middleware/metrics.middleware';
-import routes from '@routes/index';
+import env, { isProduction } from '@config/env.config';
 import errorHandler from '@middleware/error.middleware';
+import metricsMiddleware from '@middleware/metrics.middleware';
 import notFoundHandler from '@middleware/notFound.middleware';
-import { getMetrics, metricsRegister } from '@utils/metrics/metrics';
+import requestIdMiddleware from '@middleware/requestId.middleware';
+import routes from '@routes/index';
 
 const app = express();
 

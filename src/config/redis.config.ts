@@ -1,7 +1,9 @@
-import { Redis, RedisOptions } from 'ioredis';
+import logger from '@utils/logger/logger';
+import type { RedisOptions } from 'ioredis';
+import { Redis } from 'ioredis';
 
 import env from '@config/env.config';
-import logger from '@utils/logger/logger';
+
 
 let client: Redis | null = null;
 

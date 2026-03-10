@@ -8,8 +8,8 @@ import {
   getTestimonials,
   updateTestimonialHandler
 } from '@controllers/testimonials.controller';
-import { authenticate, authorizeAction } from '@middleware/auth.middleware';
 import trackAnalyticsEvent from '@middleware/analytics.middleware';
+import { authenticate, authorizeAction } from '@middleware/auth.middleware';
 import validate from '@middleware/validation.middleware';
 import {
   createTestimonialSchema,

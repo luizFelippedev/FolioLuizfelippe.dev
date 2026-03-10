@@ -1,19 +1,19 @@
 import { Router } from 'express';
 
-import authRoutes from '@routes/auth.routes';
 import adminRoutes from '@routes/admin.routes';
 import analyticsRoutes from '@routes/analytics.routes';
+import authRoutes from '@routes/auth.routes';
 import blogRoutes from '@routes/blog.routes';
 import certificateRoutes from '@routes/certificates.routes';
 import contactRoutes from '@routes/contact.routes';
 import docsRoutes from '@routes/docs.routes';
+import labsRoutes from '@routes/labs.routes';
 import newsletterRoutes from '@routes/newsletter.routes';
 import projectRoutes from '@routes/projects.routes';
 import searchRoutes from '@routes/search.routes';
+import statusRoutes from '@routes/status.routes';
 import testimonialRoutes from '@routes/testimonials.routes';
 import uploadRoutes from '@routes/upload.routes';
-import labsRoutes from '@routes/labs.routes';
-import statusRoutes from '@routes/status.routes';
 
 const router = Router();
 

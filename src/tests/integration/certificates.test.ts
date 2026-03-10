@@ -1,6 +1,6 @@
-import { beforeAll, afterAll, afterEach, describe, expect, it } from 'vitest';
-import request from 'supertest';
 import type { Express } from 'express';
+import request from 'supertest';
+import { beforeAll, afterAll, afterEach, describe, expect, it } from 'vitest';
 
 import CertificateModel from '../../models/Certificate.model';
 import {

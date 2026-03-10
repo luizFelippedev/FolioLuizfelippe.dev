@@ -1,6 +1,6 @@
-import ProjectModel from '@models/Project.model';
-import CertificateModel from '@models/Certificate.model';
 import BlogPostModel from '@models/BlogPost.model';
+import CertificateModel from '@models/Certificate.model';
+import ProjectModel from '@models/Project.model';
 
 interface SearchResult<T> {
   type: 'project' | 'certificate' | 'blog';

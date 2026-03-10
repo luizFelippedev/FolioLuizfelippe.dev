@@ -1,6 +1,6 @@
+import { paginationQuerySchema } from '@validators/common/pagination.validator';
 import { z } from 'zod';
 
-import { paginationQuerySchema } from '@validators/common/pagination.validator';
 
 const dateSchema = z.preprocess((value) => (value ? new Date(String(value)) : undefined), z.date());
 

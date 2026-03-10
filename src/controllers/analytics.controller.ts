@@ -1,3 +1,4 @@
+import { successResponse } from '@utils/helpers/response.helper';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -6,7 +7,6 @@ import {
   getAnalyticsTimeline,
   recordAnalyticsEvent
 } from '@services/analytics.service';
-import { successResponse } from '@utils/helpers/response.helper';
 
 export const ingestEvent = async (req: Request, res: Response, next: NextFunction) => {
   try {

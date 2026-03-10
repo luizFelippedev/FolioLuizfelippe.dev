@@ -1,8 +1,7 @@
+import { AppError } from '@utils/helpers/error.helper';
 import { Types } from 'mongoose';
 
 import BlogPostModel, { type BlogPostDocument } from '@models/BlogPost.model';
-import { AppError } from '@utils/helpers/error.helper';
-
 import type {
   CreateBlogPostInput,
   CreateCommentInput,

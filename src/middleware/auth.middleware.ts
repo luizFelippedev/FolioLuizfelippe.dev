@@ -1,10 +1,10 @@
+import { canPerformAction, type AppAction, getAllowedRoles } from '@utils/auth/policies';
+import { AppError } from '@utils/helpers/error.helper';
+import { verifyAccessToken } from '@utils/helpers/token.helper';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import UserModel, { type UserRole } from '@models/User.model';
-import { AppError } from '@utils/helpers/error.helper';
-import { verifyAccessToken } from '@utils/helpers/token.helper';
-import { canPerformAction, type AppAction, getAllowedRoles } from '@utils/auth/policies';
 
 declare module 'express-serve-static-core' {
   interface Request {

@@ -1,6 +1,6 @@
+import { getCache, setCache } from '@utils/cache/cache.service';
 import type { NextFunction, Request, Response } from 'express';
 
-import { getCache, setCache } from '@utils/cache/cache.service';
 
 export type CacheKeyBuilder = (req: Request) => string;
 

@@ -10,8 +10,8 @@ import {
   toggleCommentApprovalHandler,
   updateBlogPostHandler
 } from '@controllers/blog.controller';
-import { authenticate, authorizeAction } from '@middleware/auth.middleware';
 import trackAnalyticsEvent from '@middleware/analytics.middleware';
+import { authenticate, authorizeAction } from '@middleware/auth.middleware';
 import cacheResponse from '@middleware/cache.middleware';
 import validate from '@middleware/validation.middleware';
 import {

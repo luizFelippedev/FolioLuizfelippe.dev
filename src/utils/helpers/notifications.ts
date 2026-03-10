@@ -1,5 +1,5 @@
-import type { NotificationPayload } from '@sockets/notifications.socket';
 import { getNotificationsNamespace } from '@sockets/index';
+import type { NotificationPayload } from '@sockets/notifications.socket';
 
 interface AdminNotificationPayload extends Partial<NotificationPayload> {
   title: string;

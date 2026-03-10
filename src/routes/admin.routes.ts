@@ -7,8 +7,8 @@ import {
 } from '@controllers/admin.controller';
 import { authenticate, authorizeAction } from '@middleware/auth.middleware';
 import validate from '@middleware/validation.middleware';
-import { newsletterAdminQuerySchema } from '@validators/newsletter.validator';
 import { exportContactsQuerySchema } from '@validators/contact.validator';
+import { newsletterAdminQuerySchema } from '@validators/newsletter.validator';
 
 const router = Router();
 

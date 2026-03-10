@@ -1,6 +1,6 @@
-import ContactMessageModel, { type IContactMessage } from '@models/ContactMessage.model';
 import { AppError } from '@utils/helpers/error.helper';
 
+import ContactMessageModel, { type IContactMessage } from '@models/ContactMessage.model';
 import type {
   CreateContactMessageInput
 } from '@validators/contact.validator';

@@ -7,8 +7,8 @@ import {
   submitContactMessage,
   updateContactMessageStatus
 } from '@controllers/contact.controller';
-import { authenticate, authorizeAction } from '@middleware/auth.middleware';
 import trackAnalyticsEvent from '@middleware/analytics.middleware';
+import { authenticate, authorizeAction } from '@middleware/auth.middleware';
 import validate from '@middleware/validation.middleware';
 import {
   contactMessageIdSchema,

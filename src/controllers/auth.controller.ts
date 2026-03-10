@@ -1,3 +1,6 @@
+import { AppError } from '@utils/helpers/error.helper';
+import { successResponse } from '@utils/helpers/response.helper';
+import logger from '@utils/logger/logger';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -12,9 +15,6 @@ import {
   revokeSession
 } from '@services/auth.service';
 import { sendPasswordResetEmail } from '@services/email.service';
-import { AppError } from '@utils/helpers/error.helper';
-import { successResponse } from '@utils/helpers/response.helper';
-import logger from '@utils/logger/logger';
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {

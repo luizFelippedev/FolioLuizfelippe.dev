@@ -1,6 +1,6 @@
+import { paginationQuerySchema } from '@validators/common/pagination.validator';
 import { z } from 'zod';
 
-import { paginationQuerySchema } from '@validators/common/pagination.validator';
 
 export const createLabSchema = z.object({
   body: z.object({

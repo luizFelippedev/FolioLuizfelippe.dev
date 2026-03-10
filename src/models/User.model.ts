@@ -1,6 +1,6 @@
+import { comparePassword, hashPassword } from '@utils/helpers/hash.helper';
 import { Schema, model, type HydratedDocument, type Model } from 'mongoose';
 
-import { comparePassword, hashPassword } from '@utils/helpers/hash.helper';
 
 export type UserRole = 'admin' | 'editor' | 'guest';
 

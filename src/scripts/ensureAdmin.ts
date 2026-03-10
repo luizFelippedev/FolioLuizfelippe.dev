@@ -1,6 +1,7 @@
+import logger from '@utils/logger/logger';
+
 import env from '@config/env.config';
 import UserModel from '@models/User.model';
-import logger from '@utils/logger/logger';
 
 export const ensureAdmin = async () => {
   const email = env.ADMIN_EMAIL;

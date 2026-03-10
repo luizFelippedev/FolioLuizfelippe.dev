@@ -1,6 +1,10 @@
+import { AppError } from '@utils/helpers/error.helper';
+import { parsePagination } from '@utils/helpers/pagination.helper';
+import { successResponse } from '@utils/helpers/response.helper';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import { recordActivity } from '@services/activityLog.service';
 import {
   createTestimonial,
   deleteTestimonial,
@@ -9,10 +13,6 @@ import {
   toggleTestimonialApproval,
   updateTestimonial
 } from '@services/testimonials.service';
-import { recordActivity } from '@services/activityLog.service';
-import { AppError } from '@utils/helpers/error.helper';
-import { successResponse } from '@utils/helpers/response.helper';
-import { parsePagination } from '@utils/helpers/pagination.helper';
 
 export const getTestimonials = async (req: Request, res: Response, next: NextFunction) => {
   try {

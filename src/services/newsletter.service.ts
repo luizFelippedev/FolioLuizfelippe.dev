@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
 
-import NewsletterSubscriberModel from '@models/NewsletterSubscriber.model';
 import { AppError } from '@utils/helpers/error.helper';
 
+import NewsletterSubscriberModel from '@models/NewsletterSubscriber.model';
 import type { SubscribeInput } from '@validators/newsletter.validator';
 
 const generateToken = () => crypto.randomBytes(32).toString('hex');

@@ -1,6 +1,6 @@
+import { paginationQuerySchema } from '@validators/common/pagination.validator';
 import { z } from 'zod';
 
-import { paginationQuerySchema } from '@validators/common/pagination.validator';
 
 const commentSchema = z.object({
   authorName: z.string().min(2).max(64),

@@ -1,6 +1,11 @@
+import { invalidateCachePrefix } from '@utils/cache/cache.service';
+import { AppError } from '@utils/helpers/error.helper';
+import { parsePagination } from '@utils/helpers/pagination.helper';
+import { successResponse } from '@utils/helpers/response.helper';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import { recordActivity } from '@services/activityLog.service';
 import {
   createProject,
   deleteProject,
@@ -9,11 +14,6 @@ import {
   getProjects,
   updateProject
 } from '@services/projects.service';
-import { recordActivity } from '@services/activityLog.service';
-import { AppError } from '@utils/helpers/error.helper';
-import { successResponse } from '@utils/helpers/response.helper';
-import { invalidateCachePrefix } from '@utils/cache/cache.service';
-import { parsePagination } from '@utils/helpers/pagination.helper';
 import type { CreateProjectInput, UpdateProjectInput } from '@validators/project.validator';
 
 const normalizeProjectMedia = (payload: Partial<CreateProjectInput> | Partial<UpdateProjectInput>) => {

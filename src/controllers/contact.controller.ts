@@ -1,7 +1,11 @@
+import { AppError } from '@utils/helpers/error.helper';
+import { successResponse } from '@utils/helpers/response.helper';
+import logger from '@utils/logger/logger';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import env from '@config/env.config';
+import { recordActivity } from '@services/activityLog.service';
 import {
   createContactMessage,
   deleteContactMessage,
@@ -9,11 +13,7 @@ import {
   listContactMessages,
   updateContactStatus
 } from '@services/contact.service';
-import { recordActivity } from '@services/activityLog.service';
 import { sendContactNotificationEmail } from '@services/email.service';
-import logger from '@utils/logger/logger';
-import { AppError } from '@utils/helpers/error.helper';
-import { successResponse } from '@utils/helpers/response.helper';
 
 export const submitContactMessage = async (req: Request, res: Response, next: NextFunction) => {
   try {

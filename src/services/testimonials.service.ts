@@ -1,6 +1,6 @@
-import TestimonialModel, { type TestimonialDocument } from '@models/Testimonial.model';
 import { AppError } from '@utils/helpers/error.helper';
 
+import TestimonialModel, { type TestimonialDocument } from '@models/Testimonial.model';
 import type {
   CreateTestimonialInput,
   UpdateTestimonialInput
