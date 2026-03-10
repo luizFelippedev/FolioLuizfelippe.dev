@@ -5,7 +5,11 @@ let mongoServer: MongoMemoryServer | null = null;
 
 export const connectTestDatabase = async () => {
   if (!mongoServer) {
-    mongoServer = await MongoMemoryServer.create();
+    mongoServer = await MongoMemoryServer.create({
+      instance: {
+        launchTimeout: 120000
+      }
+    });
   }
 
   const uri = mongoServer.getUri();

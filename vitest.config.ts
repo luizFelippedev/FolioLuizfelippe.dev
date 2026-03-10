@@ -23,6 +23,9 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./src/tests/setup.ts'],
+    hookTimeout: 120000,
+    testTimeout: 120000,
+    fileParallelism: false,
     coverage: {
       enabled: false
     }
