@@ -15,13 +15,12 @@ import {
   forgotPasswordSchema,
   loginSchema,
   refreshTokenSchema,
-  registerSchema,
   resetPasswordSchema
 } from '@validators/auth.validator';
 
 const router = Router();
 
-router.post('/register', validate(registerSchema), register);
+router.post('/register', register);
 router.post('/login', validate(loginSchema), login);
 router.post('/refresh', validate(refreshTokenSchema), refresh);
 router.post('/logout', authenticate, logout);

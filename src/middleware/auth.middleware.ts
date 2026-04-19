@@ -4,6 +4,7 @@ import { verifyAccessToken } from '@utils/helpers/token.helper';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import env from '@config/env.config';
 import UserModel, { type UserRole } from '@models/User.model';
 
 declare module 'express-serve-static-core' {
@@ -32,6 +33,17 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
     const user = await UserModel.findById(payload.sub).lean();
     if (!user) {
       throw new AppError('Invalid credentials', StatusCodes.UNAUTHORIZED);
+    }
+
+    const adminEmail = env.ADMIN_EMAIL?.toLowerCase();
+    const isAdminSession =
+      Boolean(adminEmail) &&
+      user.email.toLowerCase() === adminEmail &&
+      user.role === 'admin' &&
+      user.isActive;
+
+    if (!isAdminSession) {
+      throw new AppError('Authentication failed', StatusCodes.UNAUTHORIZED);
     }
 
     req.user = {

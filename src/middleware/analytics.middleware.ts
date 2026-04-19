@@ -1,6 +1,7 @@
-import type { NextFunction, Request, Response } from 'express';
-
 import { recordAnalyticsEvent } from '@services/analytics.service';
+import { getVisitorSessionIdFromRequest } from '@utils/visitor/visitorSession.helper';
+
+import type { NextFunction, Request, Response } from 'express';
 
 interface TrackOptions {
   resolvePayload?: (req: Request) => Record<string, unknown> | undefined;
@@ -11,6 +12,7 @@ export const trackAnalyticsEvent = (type: string, options: TrackOptions = {}) =>
     try {
       await recordAnalyticsEvent({
         type,
+        visitorSessionId: getVisitorSessionIdFromRequest(req) ?? undefined,
         locale: req.headers['accept-language']?.split(',')[0],
         referrer: req.get('referer') ?? undefined,
         userAgent: req.get('user-agent') ?? undefined,

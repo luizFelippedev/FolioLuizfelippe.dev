@@ -1,10 +1,14 @@
 import { Schema, model, type Document } from 'mongoose';
 
+export type ProjectLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type ProjectVisibleSegment = 'company' | 'recruiter' | 'visitor';
+
 export interface IProject extends Document {
   title: string;
   slug: string;
   description: string;
   category: string;
+  level?: ProjectLevel;
   technologies: string[];
   heroImage?: {
     url: string;
@@ -17,9 +21,12 @@ export interface IProject extends Document {
   liveUrl?: string;
   repositoryUrl?: string;
   featured: boolean;
+  visibleToSegments: ProjectVisibleSegment[];
+  pinnedAt?: Date;
   order: number;
   metrics?: {
     stars?: number;
+    forks?: number;
     downloads?: number;
     views?: number;
   };
@@ -49,6 +56,11 @@ const projectSchema = new Schema<IProject>(
       type: String,
       required: true
     },
+    level: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'advanced', 'expert'],
+      default: 'intermediate'
+    },
     technologies: {
       type: [String],
       default: []
@@ -69,12 +81,19 @@ const projectSchema = new Schema<IProject>(
       type: Boolean,
       default: false
     },
+    visibleToSegments: {
+      type: [String],
+      enum: ['company', 'recruiter', 'visitor'],
+      default: ['company', 'recruiter', 'visitor']
+    },
+    pinnedAt: Date,
     order: {
       type: Number,
       default: 0
     },
     metrics: {
       stars: Number,
+      forks: Number,
       downloads: Number,
       views: Number
     }

@@ -11,6 +11,7 @@ interface AnalyticsFilters {
 export const recordAnalyticsEvent = async (
   payload: {
     type: string;
+    visitorSessionId?: string;
     locale?: string;
     referrer?: string;
     userAgent?: string;
@@ -19,6 +20,7 @@ export const recordAnalyticsEvent = async (
 ) => {
   return AnalyticsEventModel.create({
     type: payload.type,
+    visitorSessionId: payload.visitorSessionId,
     locale: payload.locale,
     referrer: payload.referrer,
     userAgent: payload.userAgent,

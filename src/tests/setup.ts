@@ -8,3 +8,5 @@ process.env.JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN ?? '15m';
 process.env.JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN ?? '7d';
 process.env.NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL ?? 'admin@example.com';
 process.env.DATABASE_URL = process.env.DATABASE_URL ?? 'mongodb://localhost:27017/test';
+process.env.ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@example.com';
+process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'AdminPassword123!';

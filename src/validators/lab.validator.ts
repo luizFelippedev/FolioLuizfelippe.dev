@@ -8,6 +8,7 @@ export const createLabSchema = z.object({
     slug: z.string().min(3).max(160).regex(/^[a-z0-9-]+$/),
     description: z.string().min(10).max(500),
     status: z.string().max(120).optional(),
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).default('intermediate'),
     icon: z.string().max(60).optional(),
     gradient: z.string().max(200).optional(),
     ctaUrl: z.string().url().optional(),
@@ -31,6 +32,7 @@ export const labIdSchema = z.object({
 
 export const listLabsQuerySchema = z.object({
   query: paginationQuerySchema.extend({
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
     active: z.enum(['true', 'false']).optional()
   })
 });

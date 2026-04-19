@@ -7,7 +7,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import type { HelmetOptions } from 'helmet';
@@ -29,6 +29,17 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false
 });
+
+const compressionFilter = (req: Request, res: Response) => {
+  const acceptsEventStream = req.headers.accept?.includes('text/event-stream') ?? false;
+  const isChatStreamRoute = req.path === '/api/chat/stream';
+
+  if (acceptsEventStream || isChatStreamRoute) {
+    return false;
+  }
+
+  return compression.filter(req, res);
+};
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
@@ -53,7 +64,7 @@ app.use(metricsMiddleware);
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(compression());
+app.use(compression({ filter: compressionFilter }));
 
 if (!isProduction) {
   morgan.token('id', (req) => (req as Request).requestId ?? 'n/a');
@@ -75,6 +86,21 @@ app.get('/health', (_req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     environment: env.NODE_ENV
+  });
+});
+
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'portfolio-backend',
+    environment: env.NODE_ENV,
+    message: 'Backend is running. Use /ready, /health, or /api/* endpoints.',
+    endpoints: {
+      ready: '/ready',
+      health: '/health',
+      api: '/api',
+      docs: '/api/docs'
+    }
   });
 });
 

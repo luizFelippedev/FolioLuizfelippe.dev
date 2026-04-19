@@ -52,3 +52,15 @@ services:
         value: https://luizfelippedev.vercel.app/newsletter/confirm
       - key: PASSWORD_RESET_URL
         value: https://luizfelippedev.vercel.app/auth/reset-password
+      - key: GROQ_API_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
+      - key: GROQ_REQUEST_TIMEOUT_MS
+        value: 45000
+      - key: GROQ_TEMPERATURE
+        value: 0.45
+      - key: GROQ_TOP_P
+        value: 0.9

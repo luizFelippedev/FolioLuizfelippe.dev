@@ -9,6 +9,11 @@ export const createAnalyticsEventSchema = z.object({
       'blog_view',
       'contact_submission',
       'testimonial_submission',
+      'chat_open',
+      'chat_message',
+      'contact_click',
+      'outbound_click',
+      'visitor_segment_selected',
       'custom'
     ]),
     locale: z.string().optional(),
@@ -29,6 +34,11 @@ export const analyticsQuerySchema = z.object({
         'blog_view',
         'contact_submission',
         'testimonial_submission',
+        'chat_open',
+        'chat_message',
+        'contact_click',
+        'outbound_click',
+        'visitor_segment_selected',
         'custom'
       ])
       .optional()

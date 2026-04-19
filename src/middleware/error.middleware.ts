@@ -12,12 +12,13 @@ export const errorHandler = (error: Error, _req: Request, res: Response, _next: 
   if (!appError.isOperational) {
     logger.error('Unexpected error occurred', { error: appError });
   } else {
-    logger.warn(appError.message, { status, details: appError.details });
+    logger.warn(appError.message, { status, code: appError.code, details: appError.details });
   }
 
   res.status(status).json({
     success: false,
     message: appError.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+    code: appError.code || 'internal_error',
     ...(appError.details ? { details: appError.details } : {}),
     ...(process.env.NODE_ENV !== 'production' ? { stack: error.stack } : {})
   });

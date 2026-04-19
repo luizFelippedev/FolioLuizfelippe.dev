@@ -6,11 +6,14 @@ import {
   getProject,
   listFeaturedProjects,
   listProjects,
+  registerProjectView,
   updateProjectHandler
 } from '@controllers/projects.controller';
+import trackAnalyticsEvent from '@middleware/analytics.middleware';
 import { authenticate, authorizeAction } from '@middleware/auth.middleware';
 import cacheResponse from '@middleware/cache.middleware';
 import validate from '@middleware/validation.middleware';
+import { getAudienceCacheKeySuffix } from '@utils/visitor/visitorSession.helper';
 import {
   createProjectSchema,
   listFeaturedProjectsQuerySchema,
@@ -27,6 +30,7 @@ router.get(
   cacheResponse((req) => {
     const keyParts = [
       'projects:all',
+      getAudienceCacheKeySuffix(req),
       String(req.query.page ?? '1'),
       String(req.query.limit ?? ''),
       String(req.query.sortBy ?? ''),
@@ -45,6 +49,7 @@ router.get(
   cacheResponse((req) => {
     const keyParts = [
       'projects:featured',
+      getAudienceCacheKeySuffix(req),
       String(req.query.page ?? '1'),
       String(req.query.limit ?? ''),
       String(req.query.sortBy ?? ''),
@@ -57,8 +62,15 @@ router.get(
 router.get(
   '/:id',
   validate(projectIdSchema),
-  cacheResponse((req) => `projects:${req.params.id}`, 300),
+  cacheResponse((req) => `projects:${req.params.id}:${getAudienceCacheKeySuffix(req)}`, 300),
   getProject
+);
+router.post(
+  '/:slug/views',
+  trackAnalyticsEvent('project_view', {
+    resolvePayload: (req) => ({ slug: req.params.slug })
+  }),
+  registerProjectView
 );
 router.post('/', authenticate, authorizeAction('projects:manage'), validate(createProjectSchema), createProjectHandler);
 router.put(

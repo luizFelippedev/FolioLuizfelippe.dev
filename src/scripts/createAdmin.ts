@@ -2,6 +2,7 @@ import logger from '@utils/logger/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
+import env from '@config/env.config';
 import connectDatabase, { disconnectDatabase } from '@database/connection';
 import UserModel from '@models/User.model';
 
@@ -38,28 +39,45 @@ const parseArgs = () => {
 
 const main = async () => {
   const { email, password, name } = parseArgs();
-  logger.info(`Criando administrador para ${email}`);
+  const adminEmail = env.ADMIN_EMAIL?.toLowerCase();
+  const normalizedEmail = email.toLowerCase();
+
+  if (adminEmail && normalizedEmail !== adminEmail) {
+    logger.error(`Operação bloqueada: somente o admin configurado (${adminEmail}) pode ser atualizado.`);
+    process.exitCode = 1;
+    return;
+  }
+
+  logger.info(`Criando administrador para ${normalizedEmail}`);
 
   await connectDatabase();
 
   try {
-    const existing = await UserModel.findOne({ email });
+    const existing = await UserModel.findOne({ email: normalizedEmail });
 
     if (existing) {
       existing.name = name;
       existing.password = password;
       existing.role = 'admin';
       await existing.save();
-      logger.info(`Usuário admin atualizado: ${email}`);
+      logger.info(`Usuário admin atualizado: ${normalizedEmail}`);
     } else {
       await UserModel.create({
         name,
-        email,
+        email: normalizedEmail,
         password,
         role: 'admin',
         isActive: true
       });
-      logger.info(`Usuário admin criado: ${email}`);
+      logger.info(`Usuário admin criado: ${normalizedEmail}`);
+    }
+
+    const cleanup = await UserModel.updateMany(
+      { email: { $ne: normalizedEmail } },
+      { $set: { role: 'guest', isActive: false } }
+    );
+    if (cleanup.modifiedCount > 0) {
+      logger.warn(`Acesso administrativo revogado de ${cleanup.modifiedCount} usuário(s) não-admin.`);
     }
   } catch (error) {
     logger.error('Erro ao criar admin', { error });

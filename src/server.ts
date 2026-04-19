@@ -6,6 +6,7 @@ import env from '@config/env.config';
 import { createRedisClient, disconnectRedis } from '@config/redis.config';
 import connectDatabase, { disconnectDatabase } from '@database/connection';
 import { scheduleNewsletterJob } from '@jobs/newsletter.job';
+import { startPortfolioMetricsSync, stopPortfolioMetricsSync } from '@services/status.service';
 import { initializeSockets } from '@sockets/index';
 
 import app from './app';
@@ -25,6 +26,7 @@ const startServer = async () => {
     }
 
     scheduleNewsletterJob();
+    startPortfolioMetricsSync();
 
     server.listen(env.PORT, () => {
       logger.info(`🚀 Server ready at http://localhost:${env.PORT}`);
@@ -48,6 +50,7 @@ const gracefulShutdown = async (signal: string) => {
 
     await disconnectDatabase();
     await disconnectRedis();
+    stopPortfolioMetricsSync();
     process.exit(0);
   });
 };

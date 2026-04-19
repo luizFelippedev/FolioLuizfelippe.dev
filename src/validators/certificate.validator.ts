@@ -1,6 +1,10 @@
 import { paginationQuerySchema } from '@validators/common/pagination.validator';
 import { z } from 'zod';
 
+const visibleSegmentsSchema = z
+  .array(z.enum(['company', 'recruiter', 'visitor']))
+  .min(1)
+  .default(['company', 'recruiter', 'visitor']);
 
 const dateSchema = z.preprocess((value) => (value ? new Date(String(value)) : undefined), z.date());
 
@@ -14,7 +18,7 @@ export const createCertificateSchema = z.object({
     category: z
       .enum(['cloud', 'frontend', 'backend', 'design', 'data', 'devops', 'soft-skills', 'other'])
       .default('other'),
-    level: z.enum(['beginner', 'intermediate', 'advanced']).default('intermediate'),
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).default('intermediate'),
     credentialId: z.string().nullable().optional(),
     credentialUrl: z.string().url().nullable().optional(),
     previewImage: z
@@ -32,6 +36,7 @@ export const createCertificateSchema = z.object({
       )
       .optional(),
     featured: z.boolean().optional(),
+    visibleToSegments: visibleSegmentsSchema,
     skills: z.array(z.string()).default([]),
     highlights: z.array(z.string()).default([])
   })
@@ -52,7 +57,7 @@ export const certificateIdSchema = z.object({
 
 export const listCertificatesQuerySchema = z.object({
   query: paginationQuerySchema.extend({
-    level: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
     featured: z.enum(['true', 'false']).optional()
   })
 });

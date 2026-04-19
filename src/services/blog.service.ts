@@ -11,6 +11,7 @@ import type {
 interface ListBlogOptions {
   tag?: string;
   category?: string;
+  level?: string;
   published?: boolean;
   featured?: boolean;
   skip?: number;
@@ -42,6 +43,10 @@ export const listBlogPosts = async (options?: ListBlogOptions) => {
 
   if (options?.category) {
     filter.categories = options.category;
+  }
+
+  if (options?.level) {
+    filter.level = options.level;
   }
 
   if (options?.featured !== undefined) {

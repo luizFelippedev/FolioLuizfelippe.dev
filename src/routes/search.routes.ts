@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { searchHandler } from '@controllers/search.controller';
 import cacheResponse from '@middleware/cache.middleware';
 import validate from '@middleware/validation.middleware';
+import { getAudienceCacheKeySuffix } from '@utils/visitor/visitorSession.helper';
 import { searchQuerySchema } from '@validators/search.validator';
 
 const router = Router();
@@ -10,7 +11,11 @@ const router = Router();
 router.get(
   '/',
   validate(searchQuerySchema),
-  cacheResponse((req) => `search:${String(req.query.q)}:${String(req.query.limit ?? '')}`, 60),
+  cacheResponse(
+    (req) =>
+      `search:${getAudienceCacheKeySuffix(req)}:${String(req.query.q)}:${String(req.query.limit ?? '')}`,
+    60
+  ),
   searchHandler
 );
 

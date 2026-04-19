@@ -7,10 +7,16 @@ export type AnalyticsEventType =
   | 'blog_view'
   | 'contact_submission'
   | 'testimonial_submission'
+  | 'chat_open'
+  | 'chat_message'
+  | 'contact_click'
+  | 'outbound_click'
+  | 'visitor_segment_selected'
   | 'custom';
 
 export interface IAnalyticsEvent {
   type: AnalyticsEventType;
+  visitorSessionId?: string;
   userAgent?: string;
   locale?: string;
   referrer?: string;
@@ -26,9 +32,23 @@ const analyticsEventSchema = new Schema<IAnalyticsEvent, AnalyticsEventModelType
   {
     type: {
       type: String,
-      enum: ['page_view', 'project_view', 'certificate_view', 'blog_view', 'contact_submission', 'testimonial_submission', 'custom'],
+      enum: [
+        'page_view',
+        'project_view',
+        'certificate_view',
+        'blog_view',
+        'contact_submission',
+        'testimonial_submission',
+        'chat_open',
+        'chat_message',
+        'contact_click',
+        'outbound_click',
+        'visitor_segment_selected',
+        'custom'
+      ],
       required: true
     },
+    visitorSessionId: String,
     userAgent: String,
     locale: String,
     referrer: String,

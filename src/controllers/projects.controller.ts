@@ -1,19 +1,30 @@
 import { invalidateCachePrefix } from '@utils/cache/cache.service';
 import { AppError } from '@utils/helpers/error.helper';
+import { broadcastViewUpdate } from '@utils/helpers/notifications';
 import { parsePagination } from '@utils/helpers/pagination.helper';
 import { successResponse } from '@utils/helpers/response.helper';
+import { getClientIp } from '@utils/network/clientIp';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { recordActivity } from '@services/activityLog.service';
 import {
+  resolveRequestAudienceContext,
+  serializeProjectForAudience
+} from '@services/audienceAccess.service';
+import {
   createProject,
   deleteProject,
+  enrichProjectWithLiveMetrics,
+  enrichProjectsWithLiveMetrics,
   getFeaturedProjects,
   getProjectById,
+  getProjectBySlug,
   getProjects,
+  incrementProjectView,
   updateProject
 } from '@services/projects.service';
+import { trackUniqueView } from '@services/viewTracking.service';
 import type { CreateProjectInput, UpdateProjectInput } from '@validators/project.validator';
 
 const normalizeProjectMedia = (payload: Partial<CreateProjectInput> | Partial<UpdateProjectInput>) => {
@@ -50,6 +61,9 @@ export const listProjects = async (req: Request, res: Response, next: NextFuncti
     if (typeof req.query.category === 'string') {
       filters.category = req.query.category;
     }
+    if (typeof req.query.level === 'string') {
+      filters.level = req.query.level;
+    }
     if (typeof req.query.technology === 'string') {
       filters.technologies = req.query.technology;
     }
@@ -60,10 +74,14 @@ export const listProjects = async (req: Request, res: Response, next: NextFuncti
       sort: pagination.sort,
       filters
     });
+    const audienceContext = await resolveRequestAudienceContext(req);
+    const enrichedProjects = await enrichProjectsWithLiveMetrics(
+      projects as unknown as Array<Record<string, unknown>>
+    );
     return successResponse(res, {
       page: pagination.page,
       limit: pagination.limit,
-      data: projects
+      data: enrichedProjects.map((project) => serializeProjectForAudience(project, audienceContext))
     });
   } catch (error) {
     return next(error);
@@ -82,10 +100,14 @@ export const listFeaturedProjects = async (req: Request, res: Response, next: Ne
       limit: pagination.limit,
       sort: pagination.sort
     });
+    const audienceContext = await resolveRequestAudienceContext(req);
+    const enrichedProjects = await enrichProjectsWithLiveMetrics(
+      projects as unknown as Array<Record<string, unknown>>
+    );
     return successResponse(res, {
       page: pagination.page,
       limit: pagination.limit,
-      data: projects
+      data: enrichedProjects.map((project) => serializeProjectForAudience(project, audienceContext))
     });
   } catch (error) {
     return next(error);
@@ -100,7 +122,9 @@ export const getProject = async (req: Request, res: Response, next: NextFunction
       return next(new AppError('Project not found', StatusCodes.NOT_FOUND));
     }
 
-    return successResponse(res, project);
+    const audienceContext = await resolveRequestAudienceContext(req);
+    const enrichedProject = await enrichProjectWithLiveMetrics(project);
+    return successResponse(res, serializeProjectForAudience(enrichedProject ?? {}, audienceContext));
   } catch (error) {
     return next(error);
   }
@@ -112,6 +136,7 @@ export const createProjectHandler = async (req: Request, res: Response, next: Ne
     const project = await createProject(req.body);
     await Promise.all([
       invalidateCachePrefix('projects:'),
+      invalidateCachePrefix('highlights:'),
       invalidateCachePrefix('search:'),
       recordActivity({
         action: 'project:create',
@@ -137,6 +162,7 @@ export const updateProjectHandler = async (req: Request, res: Response, next: Ne
 
     await Promise.all([
       invalidateCachePrefix('projects:'),
+      invalidateCachePrefix('highlights:'),
       invalidateCachePrefix('search:'),
       recordActivity({
         action: 'project:update',
@@ -162,6 +188,7 @@ export const deleteProjectHandler = async (req: Request, res: Response, next: Ne
 
     await Promise.all([
       invalidateCachePrefix('projects:'),
+      invalidateCachePrefix('highlights:'),
       invalidateCachePrefix('search:'),
       recordActivity({
         action: 'project:delete',
@@ -172,6 +199,44 @@ export const deleteProjectHandler = async (req: Request, res: Response, next: Ne
     ]);
 
     return successResponse(res, project, 'Project deleted');
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const registerProjectView = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { slug } = req.params;
+    const ipAddress = getClientIp(req);
+
+    const viewResult = await trackUniqueView({
+      contentType: 'project',
+      contentKey: slug,
+      ipAddress
+    });
+
+    const project = viewResult.counted
+      ? await incrementProjectView(slug)
+      : await getProjectBySlug(slug);
+
+    if (!project) {
+      return next(new AppError('Project not found', StatusCodes.NOT_FOUND));
+    }
+
+    const totalViews = project.metrics?.views ?? 0;
+
+    if (viewResult.counted) {
+      broadcastViewUpdate({
+        contentType: 'project',
+        contentKey: slug,
+        views: totalViews
+      });
+    }
+
+    return successResponse(res, {
+      views: totalViews,
+      counted: viewResult.counted
+    });
   } catch (error) {
     return next(error);
   }

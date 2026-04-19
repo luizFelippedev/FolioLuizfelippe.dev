@@ -1,5 +1,7 @@
 import { Schema, model, type HydratedDocument, type Model } from 'mongoose';
 
+export type BlogLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
 export interface BlogComment {
   authorName: string;
   authorEmail: string;
@@ -24,10 +26,12 @@ export interface IBlogPost {
   }>;
   categories: string[];
   tags: string[];
+  level?: BlogLevel;
   readTime: number;
   published: boolean;
   publishedAt?: Date;
   featured: boolean;
+  visibleToSegments: Array<'company' | 'recruiter' | 'visitor'>;
   pinnedAt?: Date;
   views: number;
   likes: number;
@@ -97,6 +101,11 @@ const blogPostSchema = new Schema<IBlogPost, BlogPostModelType, IBlogPostMethods
       type: [String],
       default: []
     },
+    level: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'advanced', 'expert'],
+      default: 'intermediate'
+    },
     readTime: {
       type: Number,
       default: 5
@@ -109,6 +118,11 @@ const blogPostSchema = new Schema<IBlogPost, BlogPostModelType, IBlogPostMethods
     featured: {
       type: Boolean,
       default: false
+    },
+    visibleToSegments: {
+      type: [String],
+      enum: ['company', 'recruiter', 'visitor'],
+      default: ['company', 'recruiter', 'visitor']
     },
     pinnedAt: Date,
     views: {

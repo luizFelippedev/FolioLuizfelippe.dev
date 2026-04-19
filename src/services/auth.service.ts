@@ -9,6 +9,7 @@ import {
   verifyRefreshToken
 } from '@utils/helpers/token.helper';
 
+import env from '@config/env.config';
 import UserModel, { type UserDocument } from '@models/User.model';
 import type {
   ForgotPasswordInput,
@@ -33,25 +34,46 @@ const buildTokenPayload = (user: UserDocument): TokenPayload => ({
   role: user.role
 });
 
-export const registerUser = async (payload: RegisterInput): Promise<AuthResponse> => {
-  const existingUser = await UserModel.findOne({ email: payload.email });
-  if (existingUser) {
-    throw new AppError('Email already registered', 409);
+const getAdminEmail = () => {
+  if (!env.ADMIN_EMAIL) {
+    throw new AppError('Admin account is not configured', 500);
   }
 
-  const user = await UserModel.create(payload);
-  const tokens: AuthTokens = {
-    accessToken: createAccessToken(buildTokenPayload(user)),
-    refreshToken: createRefreshToken(buildTokenPayload(user))
-  };
+  return env.ADMIN_EMAIL.toLowerCase();
+};
 
-  return { user, tokens };
+const getAcceptedAdminEmails = () => {
+  const primaryEmail = getAdminEmail();
+  const aliases =
+    env.ADMIN_EMAIL_ALIASES?.split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean) ?? [];
+
+  return new Set<string>([primaryEmail, ...aliases]);
+};
+
+const isAuthorizedAdminUser = (user: Pick<UserDocument, 'email' | 'role' | 'isActive'>) => {
+  const adminEmail = env.ADMIN_EMAIL?.toLowerCase();
+  return Boolean(adminEmail) && user.email.toLowerCase() === adminEmail && user.role === 'admin' && user.isActive;
+};
+
+export const registerUser = async (payload: RegisterInput): Promise<AuthResponse> => {
+  void payload;
+  throw new AppError('Public registration is disabled. Access is restricted to the configured admin account.', 403);
 };
 
 export const loginUser = async (payload: LoginInput): Promise<AuthResponse> => {
-  const user = await UserModel.findOne({ email: payload.email });
+  const email = payload.email.trim().toLowerCase();
+  const adminEmail = getAdminEmail();
+  const acceptedAdminEmails = getAcceptedAdminEmails();
 
-  if (!user) {
+  if (!acceptedAdminEmails.has(email)) {
+    throw new AppError('Invalid credentials', 401);
+  }
+
+  const user = await UserModel.findOne({ email: adminEmail });
+
+  if (!user || !isAuthorizedAdminUser(user)) {
     throw new AppError('Invalid credentials', 401);
   }
 
@@ -72,8 +94,8 @@ export const refreshSession = async (refreshToken: string): Promise<AuthTokens> 
   const payload = verifyRefreshToken(refreshToken);
   const user = await UserModel.findById(payload.sub);
 
-  if (!user) {
-    throw new AppError('User not found', 404);
+  if (!user || !isAuthorizedAdminUser(user)) {
+    throw new AppError('Authentication failed', 401);
   }
 
   const tokenPayload = buildTokenPayload(user);
@@ -95,9 +117,15 @@ export const revokeSession = async () => {
 const hashToken = (token: string) => crypto.createHash('sha256').update(token).digest('hex');
 
 export const generatePasswordReset = async ({ email }: ForgotPasswordInput) => {
-  const user = await UserModel.findOne({ email });
+  const adminEmail = getAdminEmail();
+  const acceptedAdminEmails = getAcceptedAdminEmails();
+  if (!acceptedAdminEmails.has(email.trim().toLowerCase())) {
+    throw new AppError('Account not found', 404);
+  }
 
-  if (!user) {
+  const user = await UserModel.findOne({ email: adminEmail });
+
+  if (!user || !isAuthorizedAdminUser(user)) {
     throw new AppError('Account not found', 404);
   }
 
@@ -119,6 +147,10 @@ export const resetPassword = async (payload: ResetPasswordInput): Promise<AuthRe
 
   if (!user) {
     throw new AppError('Invalid or expired reset token', 400);
+  }
+
+  if (!isAuthorizedAdminUser(user)) {
+    throw new AppError('Authentication failed', 401);
   }
 
   user.password = payload.password;

@@ -44,4 +44,34 @@ describe('Certificates routes', () => {
     expect(response.body.data.data).toHaveLength(1);
     expect(response.body.data.data[0]).toMatchObject({ title: 'Nebula Architecture' });
   });
+
+  it('counts certificate view once per IP and ignores repeated view from same IP', async () => {
+    await CertificateModel.create({
+      title: 'Telemetry Observability Specialist',
+      slug: 'telemetry-observability-specialist',
+      issuer: 'Realtime Academy',
+      issueDate: new Date('2024-06-20'),
+      category: 'devops',
+      level: 'advanced',
+      skills: ['Observability']
+    });
+
+    const first = await request(app)
+      .post('/api/certificates/telemetry-observability-specialist/views')
+      .set('x-forwarded-for', '177.20.11.7');
+
+    const second = await request(app)
+      .post('/api/certificates/telemetry-observability-specialist/views')
+      .set('x-forwarded-for', '177.20.11.7');
+
+    expect(first.status).toBe(200);
+    expect(first.body.success).toBe(true);
+    expect(first.body.data.counted).toBe(true);
+    expect(first.body.data.views).toBe(1);
+
+    expect(second.status).toBe(200);
+    expect(second.body.success).toBe(true);
+    expect(second.body.data.counted).toBe(false);
+    expect(second.body.data.views).toBe(1);
+  });
 });

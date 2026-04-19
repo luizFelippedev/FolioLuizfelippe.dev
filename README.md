@@ -1,160 +1,215 @@
-# Portfolio Backend
+# Backend do meu portfolio
 
-Futuristic portfolio backend engineered with Node.js, Express, and TypeScript. It powers advanced features such as multi-tenant content management, analytics collection, real-time interactions, and AI-ready endpoints.
+Idioma: **Português (Brasil)** | English: [README.en.md](./README.en.md)
 
-## ✨ Highlights
-- **Modular architecture**: Domain-driven folders for controllers, services, validators, and models.
-- **Type-safe**: Strict TypeScript configuration, Zod schemas, and runtime validation.
-- **Secure by design**: JWT authentication, rate limiting, helmet, sanitized inputs, structured logging, and request correlation IDs.
-- **Real-time ready**: Socket.IO gateway prepared for chat, notifications, and analytics streams.
-- **Scalable integrations**: Redis cache (with in-memory fallback), Cloudinary/S3-ready upload layer, and SMTP email service.
-- **Admin productivity**: Built-in pagination/sorting, CSV exports, newsletter scheduling, and aggregated metrics dashboards.
+Esse projeto é o backend do meu portfolio pessoal.  
+Eu criei ele para ter controle total da minha plataforma: conteúdo, autenticação, métricas, uploads, newsletter e integrações de infraestrutura.
 
-## 🚀 Getting Started
+A ideia aqui não foi só "ter uma API". Foi montar uma base profissional, escalável e fácil de manter, para eu evoluir sem quebrar produção.
+
+## O que eu quis resolver com esse backend
+
+- Centralizar tudo que alimenta o frontend.
+- Ter uma área administrativa segura para eu gerenciar conteúdo.
+- Deixar pronto para crescimento, com cache, observabilidade e filas.
+- Conseguir fazer upgrade de versão quando eu quiser, sem publicação automática.
+
+## Stack que escolhi e por quê
+
+- `Node.js + Express + TypeScript`: produtividade com tipagem forte.
+- `MongoDB`: flexível para modelar projetos, blog, certificados, depoimentos e newsletter.
+- `Redis`: cache e performance nas rotas mais consultadas.
+- `Socket.IO`: canal em tempo real para notificações e analytics.
+- `Groq`: inferência hospedada e de baixa latência para o assistente inteligente do portfólio.
+- `Nginx`: reverse proxy estável para expor o backend.
+- `Prometheus + Grafana`: métricas e dashboards para operação.
+- `RabbitMQ/Kafka/PostgreSQL` (opcionais por profile): prontos para cenários avançados.
+
+## Como o projeto está organizado
+
+- `src/config`: variáveis de ambiente, conexões e configs de serviços externos.
+- `src/controllers`: camada HTTP (entrada e saída da API).
+- `src/services`: regras de negócio.
+- `src/models`: modelos Mongoose.
+- `src/middleware`: autenticação, validação, tratamento de erro, métricas.
+- `src/routes`: organização das rotas.
+- `src/utils`: helpers compartilhados (cache, logger, paginação, CSV, etc).
+
+## Como rodar localmente
 
 ```bash
-yarn install
-yarn dev
+npm ci
+npm run dev
 ```
 
-The development server boots on `http://localhost:4000` by default. Environment variables are resolved through `.env.<env>` files with type-safe validation (`src/config/env.config.ts`).
+Backend padrão em `http://localhost:4000`.
 
-## 📁 Key Directories
-- `src/config` – Environment, database, cache, and external service configuration.
-- `src/controllers` – Presentation layer orchestrating requests/responses.
-- `src/services` – Business logic with domain-specific operations.
-- `src/models` – Mongoose models for MongoDB collections.
-- `src/middleware` – Cross-cutting concerns such as auth, validation, logging, and error handling.
-- `src/utils` – Shared helpers (pagination, caching, CSV, error utilities), response formatters, and logger configuration.
-- `src/routes` – API surface split by module and wired in `routes/index.ts`.
+### Chatbot com Groq
 
-## 📊 Advanced Capabilities
-- **Smart caching** – Declarative middleware backed by Redis (or in-memory fallback) with automatic cache busting on mutations.
-- **Insightful analytics** – Activity logs for all admin mutations, real-time dashboard broadcasting, and REST metrics summaries.
-- **Powerful exports** – Admin endpoints deliver newsletter subscriber and contact pipelines as downloadable CSV files.
-- **Flexible list APIs** – Pagination, sorting, and filtering parameters standardised across projects, certificates, blog posts, and testimonials.
-- **Prometheus metrics** – `/metrics` endpoint exposes default Node and HTTP instrumentation for scraping.
+O backend agora expõe:
 
-## 🚀 Deployment Playbook
+- `GET /api/chat/status`: status do provedor Groq e do modelo configurado.
+- `POST /api/chat/stream`: streaming SSE para o chatbot do portfólio.
 
-| Concern | Recommendation |
-| --- | --- |
-| **MongoDB** | Use MongoDB Atlas or a managed cluster. Set `DATABASE_URL` with credentials + retry params. Enable SRV connection and IP allowlisting. |
-| **Redis** | Required for distributed caching and rate-limiter persistence. A managed instance (Upstash, Redis Cloud) or a container (`redis:7-alpine`). Set `REDIS_URL` accordingly. Fallback to in-memory cache happens automatically in tests, but production should run a real instance. |
-| **SMTP / Email** | Provide transactional email credentials (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`) or an API-based provider. Configure `NOTIFICATION_EMAIL`, `NEWSLETTER_CONFIRMATION_URL`, and `PASSWORD_RESET_URL` with public HTTPS origins. |
-| **Assets** | Configure Cloudinary/S3 creds when enabling upload persistence (`CLOUDINARY_*` or `AWS_*` variables). |
-| **Environment files** | Duplicate `.env.example` into stage-specific files (`.env.development`, `.env.production`, `.env.test`). CI/test already seeds `NODE_ENV=test`. |
-| **Seeding** | Use `npm run seed -- --reset` to populate sample projects/certificates/blog/testimonials. Supports `--collections` and `--dry-run`. |
-| **Recurring jobs** | Newsletter digest is scheduled weekly via `node-cron` when the app boots. In distributed setups, run the job on a dedicated worker or leverage a job queue to avoid duplicate sends. |
+Fluxo local recomendado:
 
-### Minimal production `.env.production` example
-
-```
-NODE_ENV=production
-PORT=4000
-DATABASE_URL=mongodb+srv://<user>:<password>@<cluster>/portfolio?retryWrites=true&w=majority
-REDIS_URL=rediss://:<password>@<host>:<port>
-CLIENT_URL=https://portfolio.yourdomain.com
-JWT_ACCESS_SECRET=<64-char-secret>
-JWT_REFRESH_SECRET=<64-char-secret>
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=apikey
-SMTP_PASSWORD=<sendgrid-api-key>
-NOTIFICATION_EMAIL=hello@yourdomain.com
-NEWSLETTER_CONFIRMATION_URL=https://portfolio.yourdomain.com/newsletter/confirm
-PASSWORD_RESET_URL=https://portfolio.yourdomain.com/auth/reset-password
+```bash
+npm run dev
 ```
 
-Ensure the hosting platform exposes `PORT`, forwards WebSocket traffic (Socket.IO), and allows outbound SMTP connections.
+Depois ajuste as variáveis `GROQ_*` no `.env.development` com sua chave da Groq.
 
-## 🔐 Roles & Permissions
-- `admin` – full access to every action (content management, analytics, newsletter dispatch, exports).
-- `editor` – create/update/delete content (projects, certificates, blog posts, testimonials, uploads) and manage contact follow-up.
-- `guest` – read-only defaults for newly registered accounts.
-- Route guards use the reusable `authorizeAction` middleware in `src/middleware/auth.middleware.ts`, backed by policies defined in `src/utils/auth/policies.ts`.
+Fluxos locais suportados:
 
-## 🗃️ Database Seeding
-- Seed with curated sample data using the CLI: `npm run seed` (optional flags `--collections`, `--reset`, `--dry-run`).
-- Seed definitions live in `src/database/seeders/sampleData.ts`; extend them or point to external datasets as required.
+- Backend no host:
+  - `npm run dev`
+- Backend no Docker:
+  - `docker compose up -d --build backend`
 
-## 🧪 Testing
-- `npm test` executes Vitest with Supertest-powered integration specs running against an in-memory MongoDB instance.
-- Tests live under `src/tests` and share helpers for spinning up/tearing down the ephemeral database.
-- Vitest configuration resides in `vitest.config.ts` (with TS path aliases respected via `vite-tsconfig-paths`).
+Contrato local padrão:
 
-## 📘 API Documentation
-- `docs/api.md` – Human-readable endpoint reference.
-- `docs/swagger.yaml` – Machine-readable OpenAPI definition (starter stub).
-- Live Swagger UI available at `http://localhost:4000/docs` when running `npm run dev`.
+- frontend em `http://localhost:5173`
+- backend em `http://localhost:4000`
+- frontend usando `VITE_API_URL=http://localhost:4000/api`
+- Groq em `https://api.groq.com/openai/v1`
 
-## 🧩 Scripts
-- `yarn dev` – Hot-reload development server with `tsx`.
-- `yarn build` – Production build (`tsc` + `tsc-alias`).
-- `yarn start` – Launch compiled server from `dist`.
-- `yarn lint` / `yarn format` – Static analysis and formatting helpers.
-- `npm run seed` – Populate MongoDB with the curated sample dataset.
-- `npm test` – Execute the Vitest integration suite (Mongo Memory Server + Supertest).
-- `npm run stack:up` – Start core stack locally.
-- `npm run stack:up:full` – Start core stack + optional queues/streaming/sql profiles.
-- `npm run release:activate -- <image:tag>` – Activate backend upgrade manually.
-- `npm run release:rollback` – Rollback to previous backend image.
-- `npm run release:status` – Show current active backend image and release state.
+Se quiser subir stack completa com Docker:
 
+```bash
+docker compose --profile queues --profile streaming --profile sql up -d
+```
 
-## 🐳 Docker & Compose
-- `docker build -t portfolio-backend .` – build the production image.
-- `docker compose up --build -d` – run core stack (backend + nginx + mongo + redis + prometheus + grafana).
-- `docker compose --profile queues --profile streaming --profile sql up -d` – run all optional services.
-
-Core endpoints:
-- API (NGINX): `http://localhost`
+Serviços principais:
+- API: `http://localhost`
 - Health: `http://localhost/health`
+- Ready: `http://localhost/ready`
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3001`
-- RabbitMQ UI (`queues` profile): `http://localhost:15672`
 
-Manual upgrade (local self-hosted):
-1. Build/push candidate image.
-2. `npm run release:activate -- luizfelippedev/portfolio:v2`
-3. If needed: `npm run release:rollback`
+## Ambientes (desenvolvimento vs produção)
 
-## 🔐 Environment Template
-Use templates:
+Eu deixei separado para evitar erro comum: mexer em desenvolvimento e impactar o que está no ar.
+
+- Desenvolvimento: `.env.development`
+- Produção: `.env.production`
+- Docker local: `.env`
+
+Templates disponíveis:
 - `.env.development.example`
 - `.env.production.example`
 - `.env.docker.example`
 
-Then create your runtime files (`.env.development`, `.env.production`, `.env`) with real secrets. Variables are validated at startup.
+As variáveis são validadas no startup (`src/config/env.config.ts`).  
+Se faltar algo importante, a aplicação falha cedo, em vez de quebrar no meio da execução.
 
-Crafted to showcase senior-level backend engineering with futuristic flair. Integrate it with the companion frontend for a full-stack, immersive portfolio experience.
+## Deploy controlado (upgrade só quando eu decidir)
 
-## 🚀 Render (Free Tier) Deploy
-`render.yaml` already lives at the backend repo root (`Backend`) and uses the Dockerfile for a hands-free deploy.
+Esse ponto foi uma prioridade: nada de atualizar sozinho em produção.
 
-1) **Criar serviço**: Render → New → Web Service → selecione o repo backend → Root Directory: `Backend` (se estiver em monorepo) → plano Free → Render detecta o `render.yaml`.  
-2) **Deploy controlado**: `autoDeploy: false`, então só atualiza quando você executar manual deploy no painel da Render.  
-3) **Variáveis no dashboard** (não suba segredos no git):
-   - `DATABASE_URL` (MongoDB Atlas, ex: `mongodb+srv://...`)
-   - `REDIS_URL` (opcional mas recomendado, ex: Upstash/Redis Cloud)  
-   - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` (recrie strings fortes)  
-   - `CLIENT_URL` = `https://luizfelippedev.vercel.app`
-   - `CORS_ORIGINS` = `https://luizfelippedev.vercel.app`
-   - `ASSET_BASE_URL` = URL pública do backend Render (ex: `https://<app>.onrender.com`)  
-   - `NEWSLETTER_CONFIRMATION_URL` = `https://luizfelippedev.vercel.app/newsletter/confirm`  
-   - `PASSWORD_RESET_URL` = `https://luizfelippedev.vercel.app/auth/reset-password`  
-   - Cloud/S3 se usar: `CLOUDINARY_*`, `AWS_*`  
-   - `NOTIFICATION_EMAIL` (from/sender)  
-   - (`PORT=4000`, `NODE_ENV=production` já está no `render.yaml`)
-4) **WebSockets/CORS**: no painel da Render, habilite WebSockets.  
-5) **Deploy**: Render vai buildar via Docker e expor HTTPS. Copie a URL pública para usar no frontend:
-   - `VITE_API_URL=https://<app>.onrender.com/api`
-   - `VITE_WS_URL=wss://<app>.onrender.com`
+- No Render: `autoDeploy: false` no `render.yaml`.
+- Local/self-hosted: scripts de release manual.
 
-## 🚀 Vercel (Frontend) – apontando para o backend na Render
-1) Root: `Portfolio/frontend`. Build: `npm run build`. Output: `dist`. Node: 18/20.  
-2) Envs na Vercel:
-   - `VITE_API_URL=https://<app>.onrender.com/api`
-   - `VITE_WS_URL=wss://<app>.onrender.com` (ou derive automaticamente se preferir)  
-3) Deploy e teste páginas críticas (/contact, /admin, /projects, /labs CRUD, sockets).
+Fluxo que eu uso:
+1. Gerar nova imagem.
+2. Validar com `npm run release:check`.
+3. Ativar quando eu quiser: `npm run release:activate -- <image:tag>`.
+4. Se precisar voltar: `npm run release:rollback`.
+5. Ver estado atual: `npm run release:status`.
+
+## Segurança e governança
+
+- JWT access + refresh token.
+- Rate limit.
+- Helmet e hardening HTTP.
+- CORS configurável.
+- Logs estruturados com correlação por request.
+- Perfis de permissão (`admin`, `editor`, `guest`).
+
+## Visualizações em tempo real (anti-duplicação por IP)
+
+- Endpoint blog: `POST /api/blog/:slug/views`
+- Endpoint projetos: `POST /api/projects/:slug/views`
+- Regra: mesmo IP não incrementa novamente dentro da janela configurada (`VIEW_UNIQUE_TTL_SECONDS`).
+- Tempo real: quando conta nova visualização, o backend emite evento Socket.IO `views:update` no namespace `/notifications` (canais `public-metrics` e `admin-alerts`).
+
+## Qualidade e testes
+
+- Lint: `npm run lint`
+- Build: `npm run build`
+- Testes de integração: `npm test -- --run`
+
+Os testes usam Mongo em memória e já estão ajustados para ambiente de CI com timeout estável.
+
+## Seed de dados
+
+Para popular o banco com dados iniciais:
+
+```bash
+npm run seed -- --reset
+```
+
+Você pode rodar também com `--collections` e `--dry-run`.
+
+## API e documentação
+
+- Referência humana da API (PT-BR): `docs/api.md`
+- Referência humana da API (EN): `docs/api.en.md`
+- Swagger/OpenAPI: `docs/swagger.yaml`
+- Swagger UI local: `http://localhost:4000/docs`
+
+## Render (backend)
+
+O deploy está preparado para subir via `render.yaml`.
+
+Passo a passo:
+1. Criar `Web Service` na Render apontando para o repo `Backend`.
+2. Confirmar que `autoDeploy` está desligado para deploy manual.
+3. Preencher variáveis no dashboard (não no git):
+   - `DATABASE_URL`
+   - `REDIS_URL`
+   - `JWT_ACCESS_SECRET`
+   - `JWT_REFRESH_SECRET`
+   - `CLIENT_URL=https://luizfelippedev.vercel.app`
+   - `CORS_ORIGINS=https://luizfelippedev.vercel.app`
+   - `ASSET_BASE_URL=https://<seu-app>.onrender.com`
+   - `NEWSLETTER_CONFIRMATION_URL`
+   - `PASSWORD_RESET_URL`
+4. Habilitar WebSockets no serviço.
+5. Fazer deploy manual quando quiser publicar upgrade.
+
+## Vercel (frontend)
+
+Frontend fica na Vercel, consumindo esse backend da Render.
+
+Variáveis esperadas no frontend:
+- `VITE_API_URL=https://<seu-app>.onrender.com/api`
+- `VITE_WS_URL=wss://<seu-app>.onrender.com`
+
+## Frontend e backend em pastas separadas
+
+Esse projeto funciona normalmente com pastas independentes, por exemplo:
+
+- `D:\Github\Backend`
+- `D:\Github\Frontend`
+
+O acoplamento entre eles acontece por URL, não por estrutura de diretório:
+
+- backend em `http://localhost:4000`
+- frontend apontando `VITE_API_URL=http://localhost:4000/api`
+- widget do chatbot consumindo `POST /api/chat/stream`
+
+## Comandos mais usados no dia a dia
+
+- `npm run dev`
+- `npm run lint`
+- `npm run build`
+- `npm test -- --run`
+- `npm run seed -- --reset`
+- `npm run stack:up`
+- `npm run stack:up:full`
+- `npm run release:check`
+- `npm run release:activate -- <image:tag>`
+- `npm run release:rollback`
+- `npm run release:status`
+
+Esse backend foi pensado para ser uma base real de produção, mas com controle total meu sobre quando e como evoluir.

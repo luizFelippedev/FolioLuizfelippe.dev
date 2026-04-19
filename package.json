@@ -8,6 +8,7 @@
     "dev:docker": "docker compose up -d",
     "build": "rm -f tsconfig.tsbuildinfo && tsc --project tsconfig.json --incremental false && tsc-alias -p tsconfig.json",
     "seed": "TMPDIR=${TMPDIR:-/tmp} tsx scripts/seed.ts",
+    "cleanup-demo": "TMPDIR=${TMPDIR:-/tmp} tsx scripts/cleanup-demo.ts",
     "create-admin": "tsx src/scripts/createAdmin.ts",
     "start": "node dist/server.js",
     "test": "vitest",

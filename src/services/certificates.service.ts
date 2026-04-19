@@ -50,6 +50,14 @@ export const getCertificateBySlug = async (slug: string) => {
   return CertificateModel.findOne({ slug });
 };
 
+export const incrementCertificateView = async (slug: string) => {
+  return CertificateModel.findOneAndUpdate(
+    { slug },
+    { $inc: { 'metrics.views': 1 } },
+    { new: true }
+  );
+};
+
 const applyPinMetadata = <T extends { featured?: boolean }>(payload: T) => {
   const next = { ...payload } as T & { pinnedAt?: Date };
   if (payload.featured === true) {

@@ -1,6 +1,10 @@
 import { paginationQuerySchema } from '@validators/common/pagination.validator';
 import { z } from 'zod';
 
+const visibleSegmentsSchema = z
+  .array(z.enum(['company', 'recruiter', 'visitor']))
+  .min(1)
+  .default(['company', 'recruiter', 'visitor']);
 
 const commentSchema = z.object({
   authorName: z.string().min(2).max(64),
@@ -30,10 +34,12 @@ export const createBlogPostSchema = z.object({
       .optional(),
     categories: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).default('intermediate'),
     readTime: z.number().int().positive().default(5),
     published: z.boolean().default(false),
     publishedAt: z.preprocess((val) => (val ? new Date(String(val)) : undefined), z.date().optional()),
     featured: z.boolean().optional(),
+    visibleToSegments: visibleSegmentsSchema,
     seo: z
       .object({
         title: z.string().optional(),
@@ -68,6 +74,7 @@ export const listBlogPostsQuerySchema = z.object({
   query: paginationQuerySchema.extend({
     tag: z.string().optional(),
     category: z.string().optional(),
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
     published: z.enum(['true', 'false']).optional(),
     featured: z.enum(['true', 'false']).optional()
   })

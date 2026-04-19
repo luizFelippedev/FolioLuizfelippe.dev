@@ -21,7 +21,18 @@ export const listPublicLabsHandler = async (req: Request, res: Response, next: N
 export const listAdminLabsHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const pagination = parsePagination(req.query, { defaultLimit: 50, maxLimit: 200 });
-    const labs = await listLabs({ skip: pagination.skip, limit: pagination.limit });
+    const filters: Record<string, unknown> = {};
+    if (typeof req.query.active === 'string') {
+      filters.active = req.query.active === 'true';
+    }
+    if (typeof req.query.level === 'string') {
+      filters.level = req.query.level;
+    }
+    const labs = await listLabs({
+      skip: pagination.skip,
+      limit: pagination.limit,
+      filters: Object.keys(filters).length ? filters : undefined
+    });
     return successResponse(res, labs);
   } catch (error) {
     return next(error);
@@ -32,6 +43,8 @@ export const createLabHandler = async (req: Request, res: Response, next: NextFu
   try {
     const lab = await createLab(req.body);
     broadcastAdminNotification({
+      code: 'labs.created',
+      params: { title: lab.title },
       title: 'Lab created',
       message: `${lab.title} is now available`,
       type: 'success'
@@ -46,9 +59,11 @@ export const updateLabHandler = async (req: Request, res: Response, next: NextFu
   try {
     const updated = await updateLab(req.params.id, req.body);
     if (!updated) {
-      return next(new AppError('Lab not found', StatusCodes.NOT_FOUND));
+      return next(new AppError('Lab not found', StatusCodes.NOT_FOUND, undefined, true, 'lab_not_found'));
     }
     broadcastAdminNotification({
+      code: 'labs.updated',
+      params: { title: updated.title, status: req.body.status ?? 'content' },
       title: 'Lab updated',
       message: `${updated.title} just changed (${req.body.status ?? 'content'})`,
       type: 'info'
@@ -63,9 +78,11 @@ export const deleteLabHandler = async (req: Request, res: Response, next: NextFu
   try {
     const lab = await deleteLab(req.params.id);
     if (!lab) {
-      return next(new AppError('Lab not found', StatusCodes.NOT_FOUND));
+      return next(new AppError('Lab not found', StatusCodes.NOT_FOUND, undefined, true, 'lab_not_found'));
     }
     broadcastAdminNotification({
+      code: 'labs.deleted',
+      params: { title: lab.title },
       title: 'Lab removed',
       message: `${lab.title} left the roadmap`,
       type: 'warning'

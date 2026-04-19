@@ -58,4 +58,36 @@ describe('Blog routes', () => {
     expect(response.body.data.data).toHaveLength(1);
     expect(response.body.data.data[0].title).toBe('Intro to Holographic UX');
   });
+
+  it('counts post view once per IP and ignores repeated view from same IP', async () => {
+    await BlogPostModel.create({
+      title: 'Realtime Metrics for Portfolio',
+      slug: 'realtime-metrics-portfolio',
+      excerpt: 'Track unique post views with anti-duplication.',
+      content: '## Realtime Metrics\nUnique by IP.',
+      categories: ['engineering'],
+      tags: ['metrics'],
+      readTime: 4,
+      published: true,
+      publishedAt: new Date('2024-04-01')
+    });
+
+    const first = await request(app)
+      .post('/api/blog/realtime-metrics-portfolio/views')
+      .set('x-forwarded-for', '187.22.10.1');
+
+    const second = await request(app)
+      .post('/api/blog/realtime-metrics-portfolio/views')
+      .set('x-forwarded-for', '187.22.10.1');
+
+    expect(first.status).toBe(200);
+    expect(first.body.success).toBe(true);
+    expect(first.body.data.counted).toBe(true);
+    expect(first.body.data.views).toBe(1);
+
+    expect(second.status).toBe(200);
+    expect(second.body.success).toBe(true);
+    expect(second.body.data.counted).toBe(false);
+    expect(second.body.data.views).toBe(1);
+  });
 });

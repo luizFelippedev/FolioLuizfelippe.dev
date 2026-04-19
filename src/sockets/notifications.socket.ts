@@ -1,10 +1,12 @@
 import type { Namespace } from 'socket.io';
 
 export interface NotificationPayload {
-  title: string;
-  message: string;
+  code?: string;
+  params?: Record<string, string | number | boolean | null | undefined>;
+  title?: string;
+  message?: string;
   type?: 'info' | 'success' | 'warning' | 'error';
-  timestamp: number;
+  timestamp?: number;
 }
 
 const activeUsers = new Set<string>();
@@ -25,6 +27,8 @@ export const registerNotificationsNamespace = (namespace: Namespace) => {
     socket.on('notifications:emit', (payload: NotificationPayload & { channel?: string }) => {
       const target = payload.channel ? namespace.to(payload.channel) : namespace;
       target.emit('notifications:message', {
+        code: payload.code,
+        params: payload.params,
         title: payload.title,
         message: payload.message,
         type: payload.type ?? 'info',

@@ -1,6 +1,6 @@
 import { Schema, model, type HydratedDocument, type Model } from 'mongoose';
 
-export type CertificateLevel = 'beginner' | 'intermediate' | 'advanced';
+export type CertificateLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
 export type CertificateCategory =
   | 'cloud'
@@ -31,9 +31,13 @@ export interface ICertificate {
     label?: string;
   }>;
   featured: boolean;
+  visibleToSegments: Array<'company' | 'recruiter' | 'visitor'>;
   pinnedAt?: Date;
   skills: string[];
   highlights?: string[];
+  metrics?: {
+    views: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,7 +78,7 @@ const certificateSchema = new Schema<ICertificate, CertificateModelType, ICertif
     },
     level: {
       type: String,
-      enum: ['beginner', 'intermediate', 'advanced'],
+      enum: ['beginner', 'intermediate', 'advanced', 'expert'],
       default: 'intermediate'
     },
     credentialId: String,
@@ -93,6 +97,11 @@ const certificateSchema = new Schema<ICertificate, CertificateModelType, ICertif
       type: Boolean,
       default: false
     },
+    visibleToSegments: {
+      type: [String],
+      enum: ['company', 'recruiter', 'visitor'],
+      default: ['company', 'recruiter', 'visitor']
+    },
     pinnedAt: Date,
     skills: {
       type: [String],
@@ -101,6 +110,12 @@ const certificateSchema = new Schema<ICertificate, CertificateModelType, ICertif
     highlights: {
       type: [String],
       default: []
+    },
+    metrics: {
+      views: {
+        type: Number,
+        default: 0
+      }
     }
   },
   {

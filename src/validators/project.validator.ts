@@ -1,6 +1,10 @@
 import { paginationQuerySchema } from '@validators/common/pagination.validator';
 import { z } from 'zod';
 
+const visibleSegmentsSchema = z
+  .array(z.enum(['company', 'recruiter', 'visitor']))
+  .min(1)
+  .default(['company', 'recruiter', 'visitor']);
 
 export const createProjectSchema = z.object({
   body: z.object({
@@ -8,6 +12,7 @@ export const createProjectSchema = z.object({
     slug: z.string().min(3).max(128).regex(/^[a-z0-9-]+$/),
     description: z.string().min(20),
     category: z.string().min(2),
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).default('intermediate'),
     technologies: z.array(z.string()).default([]),
     heroImage: z
       .object({
@@ -26,10 +31,12 @@ export const createProjectSchema = z.object({
     liveUrl: z.string().url().optional(),
     repositoryUrl: z.string().url().optional(),
     featured: z.boolean().optional(),
+    visibleToSegments: visibleSegmentsSchema,
     order: z.number().int().nonnegative().optional(),
     metrics: z
       .object({
         stars: z.number().optional(),
+        forks: z.number().optional(),
         downloads: z.number().optional(),
         views: z.number().optional()
       })
@@ -54,6 +61,7 @@ export const listProjectsQuerySchema = z.object({
   query: paginationQuerySchema.extend({
     featured: z.enum(['true', 'false']).optional(),
     category: z.string().optional(),
+    level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
     technology: z.string().optional()
   })
 });

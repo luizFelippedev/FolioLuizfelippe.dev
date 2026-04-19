@@ -1,9 +1,24 @@
-import { config } from 'dotenv';
+import { existsSync, readFileSync } from 'node:fs';
+
+import { config, parse } from 'dotenv';
 import { z } from 'zod';
 
 const appEnv = process.env.APP_ENV ?? process.env.NODE_ENV ?? 'development';
-config({ path: `.env.${appEnv}` });
 config();
+
+const envOverridesPath = `.env.${appEnv}`;
+
+if (existsSync(envOverridesPath)) {
+  const envOverrides = parse(readFileSync(envOverridesPath));
+
+  for (const [key, value] of Object.entries(envOverrides)) {
+    const hasValue = value.trim().length > 0;
+
+    if (hasValue || process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = appEnv;
@@ -30,6 +45,7 @@ const envSchema = z
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_S3_BUCKET: z.string().optional(),
     ADMIN_EMAIL: z.string().email().optional(),
+    ADMIN_EMAIL_ALIASES: z.string().optional(),
     ADMIN_PASSWORD: z.string().optional(),
     SENDGRID_API_KEY: z.string().optional(),
     SMTP_HOST: z.string().optional(),
@@ -39,7 +55,19 @@ const envSchema = z
     SMTP_PASSWORD: z.string().optional(),
     NOTIFICATION_EMAIL: z.string().email().optional(),
     NEWSLETTER_CONFIRMATION_URL: z.string().url().optional(),
-    PASSWORD_RESET_URL: z.string().url().optional()
+    PASSWORD_RESET_URL: z.string().url().optional(),
+    GITHUB_TOKEN: z.string().optional(),
+    GITHUB_USERNAME: z.string().default('luizFelippedev'),
+    GITHUB_METRICS_TTL_SECONDS: z.coerce.number().int().positive().default(300),
+    INSTAGRAM_USER_ID: z.string().optional(),
+    INSTAGRAM_ACCESS_TOKEN: z.string().optional(),
+    INSTAGRAM_METRICS_TTL_SECONDS: z.coerce.number().int().positive().default(300),
+    GROQ_API_BASE_URL: z.string().url().default('https://api.groq.com/openai/v1'),
+    GROQ_API_KEY: z.string().optional(),
+    GROQ_MODEL: z.string().default('openai/gpt-oss-20b'),
+    GROQ_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(45000),
+    GROQ_TEMPERATURE: z.coerce.number().min(0).max(2).default(0.45),
+    GROQ_TOP_P: z.coerce.number().min(0).max(1).default(0.9)
   })
   .superRefine((values, ctx) => {
     const requiresSmtpAuth = Boolean(values.SMTP_USER || values.SMTP_PASSWORD);

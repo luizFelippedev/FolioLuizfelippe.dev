@@ -1,165 +1,197 @@
-# Portfolio API Reference
+# Referência da API (explicada de forma direta)
 
-This document outlines the primary endpoints exposed by the futuristic portfolio backend. Pair it with the OpenAPI spec (`swagger.yaml`) for machine-readable definitions.
+Idioma: **Português (Brasil)** | English: [api.en.md](./api.en.md)
 
-**Role overview**
-- `admin`: unrestricted access (content, analytics, exports, newsletter dispatch).
-- `editor`: manage content (projects, certificates, blog, testimonials, uploads, contact follow-up).
-- `guest`: read-only default for public registration.
-The `authorizeAction` middleware enforces these policies—routes below note when elevated permissions are required.
+Esse arquivo é a explicação da API do backend no jeito que eu apresento o projeto.  
+Se você quiser especificação técnica para ferramentas, também tem o `swagger.yaml`.
 
-## Authentication
+## Visão rápida de permissões
 
-### POST /api/auth/register
-Registers an administrator account.
-- **Body**: `{ name, email, password, headline?, bio? }`
-- **Responses**:
-  - `201 Created`: Returns the user profile and JWT tokens.
-  - `409 Conflict`: Email already exists.
+- `admin`: acesso total.
+- `editor`: gerencia conteúdo (sem privilégios máximos).
+- `guest`: perfil padrão mais limitado.
 
-### POST /api/auth/login
-Authenticates a user and issues access/refresh tokens.
-- **Body**: `{ email, password }`
-- **Responses**:
-  - `200 OK`: Returns the user profile and JWT tokens.
-  - `401 Unauthorized`: Invalid credentials.
+As permissões são aplicadas no middleware `authorizeAction`.
 
-### POST /api/auth/refresh
-Refreshes the session using a refresh token (body or cookie).
+## 1) Autenticação
 
-### GET /api/auth/me
-Returns the authenticated user profile. Requires `Authorization: Bearer <token>`.
+Objetivo: controlar acesso ao painel e manter sessão segura.
 
-### POST /api/auth/logout
-Invalidates the active session and clears cookies.
+- `POST /api/auth/register`
+  - Registro público está desativado neste projeto.
+  - Body: `{ name, email, password, headline?, bio? }`
+  - Retorno esperado: `403` (somente admin configurado pode acessar painel).
 
-### POST /api/auth/forgot-password
-Triggers a password reset email.
-- **Body**: `{ email }`
+- `POST /api/auth/login`
+  - Faz login e devolve tokens.
+  - Body: `{ email, password }`
+  - Retornos: `200` (ok), `401` (credencial inválida).
 
-### POST /api/auth/reset-password
-Sets a new password using the emailed token and issues fresh JWT cookies.
-- **Body**: `{ token, password }`
+- `POST /api/auth/refresh`
+  - Renova sessão com refresh token (cookie/body).
 
-## Projects
+- `GET /api/auth/me`
+  - Retorna usuário autenticado atual.
 
-### GET /api/projects
-Returns paginated projects sorted by prominence.
-- **Query**: `page`, `limit` (default 12, max 50), `sortBy` (`createdAt`, `order`, `title`), `sortOrder`, `featured`, `category`, `technology`
-- **Response**: `{ page, limit, data: Project[] }`
+- `POST /api/auth/logout`
+  - Encerra sessão e limpa cookie/token.
 
-### GET /api/projects/featured
-Returns featured projects optimized for the hero section.
-- **Query**: `page`, `limit`, `sortBy`, `sortOrder`
-- **Response**: `{ page, limit, data: Project[] }`
+- `POST /api/auth/forgot-password`
+  - Dispara fluxo de recuperação de senha.
+  - Body: `{ email }`
 
-### GET /api/projects/:id
-Returns a single project by MongoDB identifier.
+- `POST /api/auth/reset-password`
+  - Reseta senha usando token recebido por email.
+  - Body: `{ token, password }`
 
-### POST /api/projects
-Creates a new project (admin only).
-- **Body**: Project payload (`title`, `slug`, `description`, etc.).
+## 2) Projetos
 
-### PUT /api/projects/:id
-Updates an existing project (admin only).
+Objetivo: alimentar seção principal do portfolio com paginação e filtros.
 
-### DELETE /api/projects/:id
-Removes a project (admin only).
+- `GET /api/projects`
+  - Lista projetos com paginação/filtros.
+  - Query: `page`, `limit`, `sortBy`, `sortOrder`, `featured`, `category`, `technology`.
 
-## Certificates
+- `GET /api/projects/featured`
+  - Lista só projetos em destaque.
 
-### GET /api/certificates
-Returns paginated certificates, optionally filtered by level.
-- **Query**: `page`, `limit`, `sortBy` (`issueDate`, `title`), `sortOrder`, `level`
-- **Response**: `{ page, limit, data: Certificate[] }`
+- `GET /api/projects/:id`
+  - Busca projeto específico.
 
-### GET /api/certificates/:id
-Returns a single certificate.
+- `POST /api/projects` (`admin`)
+  - Cria projeto.
 
-Admin CRUD mirrors the project endpoints.
+- `PUT /api/projects/:id` (`admin`)
+  - Atualiza projeto.
 
-## Blog
+- `DELETE /api/projects/:id` (`admin`)
+  - Remove projeto.
 
-### GET /api/blog
-Returns paginated blog posts with optional filters.
-- **Query**: `page`, `limit`, `sortBy` (`publishedAt`, `createdAt`, `title`), `sortOrder`, `tag`, `category`, `published`
-- **Response**: `{ page, limit, data: BlogPost[] }`
+- `POST /api/projects/:slug/views`
+  - Registra visualização única por IP.
+  - Se o mesmo IP repetir, não incrementa novamente dentro da janela de deduplicação.
+  - Resposta: `{ views, counted }` (`counted=true` quando realmente somou +1).
 
-### GET /api/blog/:id
-Single post by id.
+## 3) Certificados
 
-### POST /api/blog
-Create post (admin).
+Objetivo: mostrar credenciais e evolução técnica.
 
-### POST /api/blog/:postId/comments
-Appends an approved comment to a post.
+- `GET /api/certificates`
+  - Lista com paginação e filtros.
 
-### PATCH /api/blog/:postId/comments/:commentId
-Toggles comment approval (admin).
+- `GET /api/certificates/:id`
+  - Detalhe de um certificado.
 
-### POST /api/blog/:slug/views
-Records a view and returns `{ views }`.
+- CRUD administrativo segue o mesmo padrão de projetos (`admin`).
 
-## Testimonials
+## 4) Blog
 
-### GET /api/testimonials
-Retrieves paginated testimonials.
-- **Query**: `page`, `limit`, `sortBy` (`createdAt`, `rating`, `name`), `sortOrder`, `featured`, `approved`
-- **Response**: `{ page, limit, data: Testimonial[] }`
+Objetivo: publicar conteúdo técnico e registrar interação.
 
-### CRUD
-Create (public), update/delete/moderate (admin) endpoints mirror previous sections.
+- `GET /api/blog`
+  - Lista posts com filtros (`tag`, `category`, `published` etc).
 
-## Search
+- `GET /api/blog/:id`
+  - Retorna post específico.
 
-### GET /api/search
-Performs federated search across projects, certificates, and blog posts.
-- **Query**: `q` (min 2 chars), `limit` (max 50)
-- **Caching**: results cached per term.
+- `POST /api/blog` (`admin`)
+  - Cria post.
 
-## Contact
+- `POST /api/blog/:postId/comments`
+  - Cria comentário no post.
 
-### POST /api/contact
-Submits a message (public) and emails the admin notification address if configured.
+- `PATCH /api/blog/:postId/comments/:commentId` (`admin`)
+  - Aprova/reprova comentário.
 
-### PATCH /api/contact/:id/status
-Updates a message status (admin) and records an activity log entry.
+- `POST /api/blog/:slug/views`
+  - Registra visualização única por IP.
+  - Resposta: `{ views, counted }`.
 
-## Newsletter
+## 5) Depoimentos
 
-### POST /api/newsletter/subscribe
-Registers a subscriber and sends a confirmation email (double opt-in).
+Objetivo: prova social do portfolio.
 
-### POST /api/newsletter/unsubscribe
-Marks a subscriber as unsubscribed.
+- `GET /api/testimonials`
+  - Lista depoimentos com paginação.
 
-### GET /api/newsletter (admin)
-List subscribers with filters `confirmed`, `tag`.
+- Criação pode ser pública.
+- Moderação/edição/exclusão é administrativa.
 
-### POST /api/newsletter/send (admin)
-Triggers an immediate digest send (optional `subject`, `content`).
+## 6) Busca
 
-### DELETE /api/newsletter/:id (admin)
-Removes a subscriber and logs the action.
+Objetivo: facilitar navegação quando o conteúdo crescer.
 
-## Analytics & Activity
+- `GET /api/search`
+  - Busca federada em projetos, certificados e blog.
+  - Query: `q`, `limit`.
+  - Resultado usa cache por termo.
 
-- **POST /api/analytics**: Ingest analytics events.
-- **GET /api/analytics/summary** / **GET /api/analytics/timeline**: Admin-only aggregated views.
-- Activity logs are exposed via **GET /api/admin/metrics** (recent activity + totals).
+## 7) Contato
 
-## Admin Utilities
+Objetivo: transformar visitas em oportunidade real.
 
-### GET /api/admin/metrics
-Returns aggregate counts and the latest activity log entries.
+- `POST /api/contact`
+  - Recebe mensagem pública.
+  - Pode notificar email admin, se configurado.
 
-### GET /api/admin/export/subscribers
-Downloads confirmed subscribers as CSV.
-- **Query**: `confirmed`, `tag`
+- `PATCH /api/contact/:id/status` (`admin`)
+  - Atualiza status do contato (`new`, `in-progress`, `resolved`).
 
-### GET /api/admin/export/contacts
-Downloads contact messages as CSV.
-- **Query**: `status` (`new`, `in-progress`, `resolved`)
+## 8) Newsletter
 
----
-More modules (certificates, blog, analytics, chat) can be layered following the same patterns. Document them here as they are implemented.
+Objetivo: manter relacionamento contínuo com visitantes.
+
+- `POST /api/newsletter/subscribe`
+  - Inscreve com confirmação (double opt-in).
+
+- `POST /api/newsletter/unsubscribe`
+  - Remove/descadastra inscrição.
+
+- `GET /api/newsletter` (`admin`)
+  - Lista inscritos com filtros.
+
+- `POST /api/newsletter/send` (`admin`)
+  - Dispara envio manual.
+
+- `DELETE /api/newsletter/:id` (`admin`)
+  - Remove inscrito.
+
+## 9) Analytics e Admin
+
+Objetivo: eu ter visão clara do que está acontecendo na plataforma.
+
+- `POST /api/analytics`
+  - Ingestão de eventos.
+
+- `GET /api/analytics/summary` (`admin`)
+  - Resumo agregado.
+
+- `GET /api/analytics/timeline` (`admin`)
+  - Evolução temporal.
+
+- `GET /api/admin/metrics` (`admin`)
+  - Métricas gerais e atividade recente.
+
+- `GET /api/admin/export/subscribers` (`admin`)
+  - Exporta newsletter em CSV.
+
+- `GET /api/admin/export/contacts` (`admin`)
+  - Exporta contatos em CSV.
+
+## Endpoints de operação
+
+- `GET /health`: saúde básica.
+- `GET /ready`: prontidão para tráfego.
+- `GET /metrics`: métricas Prometheus.
+
+## Eventos em tempo real (Socket.IO)
+
+Namespace: `/notifications`
+
+- Evento emitido pelo backend: `views:update`
+  - Payload: `{ contentType, contentKey, views, timestamp }`
+  - Canais recomendados:
+    - `public-metrics` (frontend público)
+    - `admin-alerts` (painel admin)
+
+Se novos módulos forem entrando (ex.: chat avançado, automações, jobs), eu mantenho esse documento atualizado no mesmo estilo: direto, objetivo e com contexto de negócio.

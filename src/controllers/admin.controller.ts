@@ -5,11 +5,66 @@ import type { NextFunction, Request, Response } from 'express';
 import ContactMessageModel from '@models/ContactMessage.model';
 import NewsletterSubscriberModel from '@models/NewsletterSubscriber.model';
 import { getAdminMetrics } from '@services/admin.service';
+import {
+  getWiseAssistantSettings,
+  updateWiseAssistantSettings
+} from '@services/assistantSettings.service';
+import {
+  getAdminContentOverride,
+  resetContentOverride,
+  upsertContentOverride
+} from '@services/content.service';
+import type { UpdateWiseAssistantSettingsInput } from '@validators/assistantSettings.validator';
 
 export const metricsHandler = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const metrics = await getAdminMetrics();
     return successResponse(res, metrics);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAdminContentOverrideHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const payload = await getAdminContentOverride(req.params.locale);
+    return successResponse(res, payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const upsertAdminContentOverrideHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const payload = await upsertContentOverride(req.params.locale, req.body.overrides, req.user?.email);
+    return successResponse(res, payload, 'Content override saved');
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const resetAdminContentOverrideHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const payload = await resetContentOverride(req.params.locale);
+    return successResponse(res, payload, 'Content override reset');
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAssistantSettingsHandler = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const payload = await getWiseAssistantSettings();
+    return successResponse(res, payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateAssistantSettingsHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const payload = await updateWiseAssistantSettings(req.body as UpdateWiseAssistantSettingsInput);
+    return successResponse(res, payload, 'Wise assistant settings saved');
   } catch (error) {
     return next(error);
   }
